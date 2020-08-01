@@ -6,11 +6,11 @@ import store from './store'
 import './assets/css/global.css'
 // 导入字体图标
 import './assets/font/iconfont.css'
-
 // 导入axios
 import axios from 'axios'
 
 import './plugins/element.js'
+
 // 配置请求根路径
 axios.defaults.baseURL = 'https://bird.ioliu.cn/v1?url=http://47.96.237.42/'
 // axios.defaults.timeout = 3000 //超时时间

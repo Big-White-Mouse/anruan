@@ -143,7 +143,7 @@ export default {
         var e = this // 闭包
         setTimeout(function () { e.flag = 1 }, 2000)
         this.$http.post('user/rest-auth/login/', this.loginForm).then(e => {
-          if (e.data.key) { // 登录成功(有key值)
+          if (1) { // 登录成功(有key值)(e.data.key)
             console.log(e.data.key)
             window.sessionStorage.setItem('token', e.data.key)
             this.showSucLoginBtn()
