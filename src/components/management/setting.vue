@@ -1,5 +1,5 @@
 <template>
-  <div>user</div>
+  <div>setting</div>
 </template>
 
 <script>

@@ -1,8 +1,11 @@
 <template>
-  <div>user</div>
+  <div>workbench</div>
 </template>
 
 <script>
+export default {
+
+}
 
 </script>
 

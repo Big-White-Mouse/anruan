@@ -2,6 +2,10 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import LoginPage from '../views/LoginPage.vue'
 import Home from '../views/Home.vue'
+import Workbench from '../views/workbench.vue'
+import Project from '../components/allproject/project.vue'
+import Manage from '../components/management/setting.vue'
+import Usercenter from '../components/usercenter/user.vue'
 
 Vue.use(VueRouter)
 
@@ -9,7 +13,17 @@ Vue.use(VueRouter)
 const routes = [
   { path: '/', redirect: 'login' },
   { path: '/login', component: LoginPage },
-  { path: '/home', component: Home }
+  {
+    path: '/home',
+    redirect: '/home/project',
+    component: Home,
+    children: [
+      { path: 'project', component: Project },
+      { path: 'management', component: Manage },
+      { path: 'user', component: Usercenter },
+    ]
+  },
+  { path: '/workbench', component: Workbench }
 ]
 
 //路由对象
@@ -25,5 +39,11 @@ router.beforeEach((to, from, next) => {
   if(!tokenStr) return next('/login')
   next()
 })
+
+//elementui 重复点击菜单报错
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 export default router

@@ -6,27 +6,30 @@
           安软标记平台
         </div>
         <div class="tab-box">
-          <el-row class="tac">
-            <el-menu
-              default-active="1"
-              class="el-menu-vertical-demo"
-              background-color="transparent"
-              text-color="#fff"
-              active-text-color="#ffd04b">
-              <el-menu-item index="1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">全部项目</span>
-              </el-menu-item>
-              <el-menu-item index="2">
-                <i class="el-icon-user-solid"></i>
-                <span slot="title">个人中心</span>
-              </el-menu-item>
-              <el-menu-item index="3">
-                <i class="el-icon-s-tools"></i>
-                <span slot="title">管理中心</span>
-              </el-menu-item>
-            </el-menu>
-          </el-row>
+          <router-link
+            to="/home/project"
+            class="app-project tabs"
+            tag="div"
+            active-class="selected"
+          >
+            <i class="el-icon-menu"> 全部项目</i>
+          </router-link>
+          <router-link
+            to="/home/user"
+            class="user-center tabs"
+            tag="div"
+            active-class="selected"
+          >
+            <i class="el-icon-user-solid"> 个人中心</i>
+          </router-link>
+          <router-link
+            to="/home/management"
+            class="management tabs"
+            tag="div"
+            active-class="selected"
+          >
+            <i class="el-icon-s-tools"> 管理中心</i>
+          </router-link>
         </div>
       </el-aside>
       <el-container>
@@ -34,12 +37,10 @@
           <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
             <el-breadcrumb-item>活动管理</el-breadcrumb-item>
-            <el-breadcrumb-item>活动列表</el-breadcrumb-item>
-            <el-breadcrumb-item>活动详情</el-breadcrumb-item>
           </el-breadcrumb>
         </el-header>
         <el-main>
-
+          <router-view></router-view>
         </el-main>
       </el-container>
     </el-container>
@@ -49,13 +50,9 @@
 <script>
 
 export default {
-  components: {
-
-  },
   data(){
     return {
-      value1: true,
-      value2: true
+      path: ''
     }
   },
 }
@@ -69,6 +66,11 @@ export default {
     }
     .el-aside{
       background-color: #3c4147;
+
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
       .title{
         width: 100%;
         height: 80px;
@@ -81,13 +83,27 @@ export default {
       .tab-box{
         width: 100%;
         padding-top: 20px;
-        .el-menu-vertical-demo{
+        .tabs{
           width: 100%;
-          .el-menu-item{
-            margin-bottom: 6px;
+          height: 50px;
+          margin-bottom: 8px;
+          text-align: center;
+          line-height: 50px;
+          transition: background-color 0.2s;
+          i{
+            font-size: 18px;
+            line-height: 50px;
+            padding-right: 8px;
+            color: #cccccc;
           }
-          .el-menu-item:hover{
-            background-color: #0E2F46 !important;
+        }
+        .tabs:hover{
+          background-color: #272b34;
+        }
+        .selected{
+          background-color: #2d3135;
+          i{
+            color: #ffffff;
           }
         }
       }
