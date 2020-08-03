@@ -33,12 +33,6 @@
         </div>
       </el-aside>
       <el-container>
-        <el-header height="40px">
-          <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>活动管理</el-breadcrumb-item>
-          </el-breadcrumb>
-        </el-header>
         <el-main>
           <router-view></router-view>
         </el-main>
@@ -106,13 +100,6 @@ export default {
             color: #ffffff;
           }
         }
-      }
-    }
-    .el-header{
-      background-color: #51b5ff+;
-      .el-breadcrumb{
-        line-height: 40px;
-        font-size: 16px;
       }
     }
     .el-main{

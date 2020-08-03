@@ -4,14 +4,17 @@
     <projectitem></projectitem>
     <projectitem></projectitem>
     <projectitem></projectitem>
+    <newprojectitem></newprojectitem>
   </div>
 </template>
 
 <script>
 import projectitem from "@/components/allproject/projectitem";
+import newprojectitem from "@/components/allproject/newprojectitem";
 export default {
   components: {
-    projectitem
+    projectitem,
+    newprojectitem
   },
   data() {
     return{

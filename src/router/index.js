@@ -6,6 +6,7 @@ import Workbench from '../views/workbench.vue'
 import Project from '../components/allproject/project.vue'
 import Manage from '../components/management/setting.vue'
 import Usercenter from '../components/usercenter/user.vue'
+import NewProject from '../components/allproject/newproject.vue'
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,7 @@ const routes = [
       { path: 'project', component: Project },
       { path: 'management', component: Manage },
       { path: 'user', component: Usercenter },
+      { path: 'newproject', component: NewProject }
     ]
   },
   { path: '/workbench', component: Workbench }
