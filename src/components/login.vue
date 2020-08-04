@@ -5,14 +5,14 @@
     </div>
     <form :model="loginForm">
       <input
-        v-show=" !isForget "
+        v-show=" whichmode === 'login' || whichmode === 'register' "
         id="uname"
         v-model="loginForm.username"
         type="text"
         placeholder="账户名"
       >
       <input
-        v-show="isReg || isForget"
+        v-show="whichmode === 'register' || whichmode === 'forget'"
         id="email"
         ref="email"
         v-model="loginForm.email"
@@ -21,21 +21,23 @@
         @keyup="correctEmail"
       >
       <input
-        v-show="!isReg && !isForget"
+        v-show="whichmode === 'login'"
         id="passwd"
         v-model="loginForm.password"
         type="password"
         placeholder="账户密码"
       >
       <input
-        v-show="isReg && !isForget"
+        v-show="whichmode === 'register'"
         id="passwd1"
+        ref="passwd1"
         v-model="loginForm.password1"
         type="password"
         placeholder="设置密码"
+        @keyup="correctpasswd()"
       >
       <input
-        v-show="isReg && !isForget"
+        v-show="whichmode === 'register'"
         id="passwd2"
         ref="passwd2"
         v-model="loginForm.password2"
@@ -113,8 +115,9 @@ export default {
       flag: 1,
 
       // 是否处于注册状态
-      isReg: 0,
-      isForget: 0,
+      // isReg: 0,
+      // isForget: 0,
+      whichmode: 'login',
 
       // 所填数据是否都合法
       rightEmail: 0,
@@ -131,9 +134,9 @@ export default {
   methods: {
     // 点击按钮后先判断处于登录注册哪个状态，再调用相应的方法
     whichMod () {
-      if (this.isReg) this.register()
-      else if (this.isForget) this.forget()
-      else this.login()
+      if (this.whichmode === 'login') this.login()
+      else if (this.whichmode === 'register') this.register()
+      else if (this.whichmode === 'forget')this.forget()
     },
     // 登陆的数据传输
     login () {
@@ -142,15 +145,15 @@ export default {
         this.flag = 0
         var e = this // 闭包
         setTimeout(function () { e.flag = 1 }, 2000)
-        this.$http.post('user/rest-auth/login/', this.loginForm).then(e => {
-          if (1) { // 登录成功(有key值)(e.data.key)
+        this.$http.post('v1/auth/login', this.loginForm).then(e => {
+          if (e.data.key) { // 登录成功(有key值)(e.data.key)
             console.log(e.data.key)
             window.sessionStorage.setItem('token', e.data.key)
             this.showSucLoginBtn()
             var t = this
             setTimeout(function () {
               t.$router.push('/home')
-            }, 1000)
+            }, 800)
           } else { // 登录失败
             var errinfo
             if (!this.loginForm.username || !this.loginForm.password) {
@@ -171,7 +174,7 @@ export default {
         console.log(this.flag)
         var e = this // 闭包
         setTimeout(function () { e.flag = 1 }, 2000)
-        this.$http.post('user/rest-auth/registration/', this.loginForm).then(e => {
+        this.$http.post('v1/auth/register', this.loginForm).then(e => {
           console.log(e.data)
           //   if(e.data.key){//登录成功(有key值)
           //     console.log(e.data.key)
@@ -205,7 +208,7 @@ export default {
       this.$refs.errbtn.innerText = '登录成功'
       setTimeout(function () {
         e.top = '30px'
-      }, 2000)
+      }, 1500)
     },
     showErrLoginBtn (errinfo) {
       var e = this.$refs.errbtn.style
@@ -214,38 +217,45 @@ export default {
       this.$refs.errbtn.innerText = errinfo
       setTimeout(function () {
         e.top = '30px'
-      }, 2000)
+      }, 1500)
     },
     // 转换登录注册和忘记密码状态
     changeMod (n) {
-      if (n == 1) {
-        if (this.isReg) {
-          this.isForget = 0
-          this.isReg = 0
-          this.text1 = '登录'
-          this.text2 = '注册'
-          this.text3 = '忘记密码'
-        } else {
-          this.isForget = 0
-          this.isReg = 1
+      if (n === 1) {
+        if(this.whichmode === 'login' || this.whichmode === 'forget'){
+          this.whichmode = 'register'
           this.text1 = '注册'
           this.text2 = '登录'
           this.text3 = '忘记密码'
-        }
-      } else {
-        if (this.isForget) {
-          this.isForget = 0
-          this.isReg = 0
+        } else if (this.whichmode === 'register'){
+          this.whichmode = 'login'
           this.text1 = '登录'
           this.text2 = '注册'
           this.text3 = '忘记密码'
-        } else {
-          this.isForget = 1
-          this.isReg = 0
+        }
+      } else if (n === 2){
+        if(this.whichmode === 'login' || this.whichmode === 'register'){
+          this.whichmode = 'forget'
           this.text1 = '发送邮件'
           this.text2 = '注册'
           this.text3 = '登录'
+        } else if (this.whichmode === 'forget'){
+          this.whichmode = 'login'
+          this.text1 = '登录'
+          this.text2 = '注册'
+          this.text3 = '忘记密码'
         }
+      }
+    },
+    //判断密码质量
+    correctpasswd () {
+      var passwdReg = /^(?=.*[0-9])(?=.*[a-zA-Z])(.{8,20})$/
+      if (passwdReg.test(this.loginForm.password1)) {
+        this.$refs.passwd1.style.border = '2px solid #75ff88'
+        this.err3 = ''
+      } else {
+        this.$refs.passwd1.style.border = '2px solid #ff5f5f'
+        this.err3 = '必须是8位数字与字母组合'
       }
     },
     // 判断两次输入的密码是否相同

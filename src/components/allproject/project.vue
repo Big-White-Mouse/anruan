@@ -10,7 +10,7 @@
 
 <script>
 import projectitem from "@/components/allproject/projectitem";
-import newprojectitem from "@/components/allproject/newprojectitem";
+import newprojectitem from "@/components/newproject/newprojectitem";
 export default {
   components: {
     projectitem,

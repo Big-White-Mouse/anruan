@@ -6,7 +6,7 @@ import Workbench from '../views/workbench.vue'
 import Project from '../components/allproject/project.vue'
 import Manage from '../components/management/setting.vue'
 import Usercenter from '../components/usercenter/user.vue'
-import NewProject from '../components/allproject/newproject.vue'
+import NewProject from '../components/newproject/newproject.vue'
 
 Vue.use(VueRouter)
 
@@ -41,11 +41,5 @@ router.beforeEach((to, from, next) => {
   if(!tokenStr) return next('/login')
   next()
 })
-
-//elementui 重复点击菜单报错
-const originalPush = VueRouter.prototype.push
-VueRouter.prototype.push = function push(location) {
-  return originalPush.call(this, location).catch(err => err)
-}
 
 export default router

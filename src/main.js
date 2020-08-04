@@ -12,7 +12,7 @@ import axios from 'axios'
 import './plugins/element.js'
 
 // 配置请求根路径
-axios.defaults.baseURL = 'https://bird.ioliu.cn/v1?url=http://47.96.237.42/'
+axios.defaults.baseURL = 'https://bird.ioliu.cn/v1?url=http://alexking.site:8080/api/'
 // axios.defaults.timeout = 3000 //超时时间
 // axios.defaults.headers[ 'mytoken' ] = '....' //设置请求头
 Vue.prototype.$http = axios
