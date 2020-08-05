@@ -125,7 +125,7 @@ export default {
   .project-info-box{
     width: 900px;
     height: 460px;
-    background-color: #D2EFFA;
+    background-color: transparent;
     margin: 40px 20px 0 20px;
     border-radius: 30px;
   }

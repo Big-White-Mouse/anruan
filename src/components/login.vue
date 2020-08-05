@@ -176,6 +176,11 @@ export default {
         setTimeout(function () { e.flag = 1 }, 2000)
         this.$http.post('v1/auth/register', this.loginForm).then(e => {
           console.log(e.data)
+          console.log(e.data.status.message);
+          if(e.data.status.message === "Something bad happend."){
+            console.log('注册成功');
+            this.whichmode = 'login'
+          }
           //   if(e.data.key){//登录成功(有key值)
           //     console.log(e.data.key)
           //     window.sessionStorage.setItem('token', e.data.key)

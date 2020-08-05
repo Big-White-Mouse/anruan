@@ -16,7 +16,13 @@ export default {
 </script>
 <style lang="less" scoped>
 .info-box{
+  width: 100%;
+  height: 100%;
   padding-top: 20px;
+  background-color: #D2EFFA;
+  border-radius: 30px;
+  box-sizing: border-box;
+
   .info{
     background-color: transparent;
     height: 30px;

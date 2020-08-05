@@ -27,7 +27,7 @@ export default {
   float: left;
   margin: 10px;
   box-sizing: border-box;
-  border: 2px dashed #8DD6C1;
+  border: 2px dashed #aceedb;
   text-align: center;
   line-height: 270px;
   cursor: pointer;
@@ -49,5 +49,8 @@ export default {
     -ms-user-select: none;
     user-select: none;
   }
+}
+.newItem:hover{
+  border: 2px dashed #67b6a0;
 }
 </style>
