@@ -1,6 +1,6 @@
 <template>
   <div class="item" @mouseenter="showStart" @mouseleave="hideStart">
-    <span class="pro-name">{{ proname }}</span>
+    <span class="pro-name">{{ proInfo.name }}</span>
     <span class="pro-info">{{ proinfo }}</span>
     <div class="done">
       <span class="remain">剩余待标记: {{ remain }}</span>
@@ -27,6 +27,7 @@
 
 <script>
 export default {
+  props: ["proInfo"],
   data() {
     return{
       projectId: '1',

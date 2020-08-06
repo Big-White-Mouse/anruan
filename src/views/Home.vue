@@ -23,6 +23,7 @@
             <i class="el-icon-user-solid"> 个人中心</i>
           </router-link>
           <router-link
+            v-if="ifAdmin === 'admin'"
             to="/home/management"
             class="management tabs"
             tag="div"
@@ -46,7 +47,22 @@
 export default {
   data(){
     return {
-      path: ''
+      path: '',
+      ifAdmin: ''
+    }
+  },
+  created() {
+    this.getUserInfo()
+  },
+  methods: {
+    //判断是不是管理员
+    getUserInfo(){
+      console.log(1);
+      this.$http.get('v1/users/self').then((res)=>{
+        this.ifAdmin = res.data.groups.find(val=>{
+          return val === 'admin'
+        })
+      })
     }
   },
 }

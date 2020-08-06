@@ -1,10 +1,7 @@
 <template>
   <div class="item-box">
-    <projectitem></projectitem>
-    <projectitem></projectitem>
-    <projectitem></projectitem>
-    <projectitem></projectitem>
-    <newprojectitem></newprojectitem>
+    <projectitem v-for="item in projectData" :key="item.url" :proInfo="item"></projectitem>
+    <newprojectitem v-if="ifAdmin === 'admin'"></newprojectitem>
   </div>
 </template>
 
@@ -18,7 +15,32 @@ export default {
   },
   data() {
     return{
-
+      ifAdmin: '',
+      projectData: []
+    }
+  },
+  created(){
+    this.getAllProject()
+  },
+  methods: {
+    getAllProject(){
+      this.$http.get('v1/tasks',{
+        params: {
+          pagesize: 9,
+          page: 1
+        }
+      }).then((res)=>{
+        console.log(res);
+        this.projectData = res.data.results
+      })
+    },
+    getUserInfo(){
+      this.$http.get('v1/users/self').then((res)=>{
+        console.log(res.data.groups);
+        this.ifAdmin = res.data.groups.find(val=>{
+          return val === 'admin'
+        })
+      })
     }
   },
 }

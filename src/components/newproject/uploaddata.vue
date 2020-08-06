@@ -6,6 +6,11 @@
       <div class="choose-progress"></div>
     </div>
     <div class="chosen-files">
+      <div class="header">
+        <div class="name"></div>
+        <div class="type"></div>
+        <div class="size"></div>
+      </div>
 
     </div>
   </div>
