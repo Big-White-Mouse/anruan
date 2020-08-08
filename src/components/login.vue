@@ -181,23 +181,6 @@ export default {
             console.log('注册成功');
             this.whichmode = 'login'
           }
-          //   if(e.data.key){//登录成功(有key值)
-          //     console.log(e.data.key)
-          //     window.sessionStorage.setItem('token', e.data.key)
-          //     this.showSucLoginBtn()
-          //     var t = this
-          //     setTimeout(function(){
-          //       t.$router.push('/home')
-          //     },1000)
-          //   } else {//登录失败
-          //     var errinfo
-          //     if( !this.loginForm.username || !this.loginForm.password){
-          //       errinfo = '请填写用户名或密码'
-          //     } else {
-          //       errinfo = '用户名或密码错误'
-          //     }
-          //     this.showErrLoginBtn(errinfo)
-          //   }
         })
       }
     },

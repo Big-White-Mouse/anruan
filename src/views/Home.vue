@@ -57,7 +57,6 @@ export default {
   methods: {
     //判断是不是管理员
     getUserInfo(){
-      console.log(1);
       this.$http.get('v1/users/self').then((res)=>{
         this.ifAdmin = res.data.groups.find(val=>{
           return val === 'admin'

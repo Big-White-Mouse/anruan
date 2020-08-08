@@ -7,9 +7,14 @@
     </div>
     <div class="chosen-files">
       <div class="header">
-        <div class="name"></div>
-        <div class="type"></div>
-        <div class="size"></div>
+        <span class="name">文件名</span>
+        <span class="type">文件类型</span>
+        <span class="size">文件大小</span>
+      </div>
+      <div class="file-info" v-for="item in fileList" :key="item.name">
+        <span class="file-name">{{item.name}}</span>
+        <span class="file-type">{{item.type}}</span>
+        <span class="file-size">{{parseInt(item.size/1000)}}KB</span>
       </div>
 
     </div>
@@ -24,12 +29,16 @@ export default {
     }
   },
   methods: {
+    //用另一个点击去触发input:file按钮的点击效果
     toGetFile(){
       this.$refs.getfile.dispatchEvent(new MouseEvent('click'))
     },
+    //获取文件信息
     getFile(event){
-      console.log(event.target.files);
-      this.fileList = event.target.files
+      this.fileList.push(...event.target.files)
+
+      //以后再解决上传文件重复的问题吧
+
       console.log(this.fileList);
     }
   }
@@ -76,7 +85,51 @@ export default {
     height: 100%;
     width: 480px;
     right: 0;
-
+    overflow: hidden;
+    .header{
+      width: 100%;
+      height: 30px;
+      background-color: rgba(0,0,0,0.1);
+      span{
+        float: left;
+        text-align: center;
+        line-height: 30px;
+      }
+      .name{
+        width: 240px;
+      }
+      .type{
+        width: 120px;
+      }
+      .size{
+        width: 120px;
+      }
+    }
+    .file-info{
+      height: 30px;
+      width: 100%;
+      transition: 0.2s;
+      span{
+        float: left;
+        text-align: center;
+        line-height: 30px;
+        overflow: hidden;
+      }
+      .file-name{
+        width: 240px;
+        font-size: 14px;
+        text-align: left;
+      }
+      .file-type{
+        width: 120px;
+      }
+      .file-size{
+        width: 120px;
+      }
+    }
+    .file-info:hover{
+      background-color: rgba(0,0,0,0.1);
+    }
   }
 
 }

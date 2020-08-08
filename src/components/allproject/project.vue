@@ -21,6 +21,7 @@ export default {
   },
   created(){
     this.getAllProject()
+    this.getUserInfo()
   },
   methods: {
     getAllProject(){
@@ -36,7 +37,6 @@ export default {
     },
     getUserInfo(){
       this.$http.get('v1/users/self').then((res)=>{
-        console.log(res.data.groups);
         this.ifAdmin = res.data.groups.find(val=>{
           return val === 'admin'
         })
