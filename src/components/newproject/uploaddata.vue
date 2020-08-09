@@ -1,8 +1,9 @@
 <template>
   <div class="upload-box">
     <input type="file" ref="getfile" class="choose" @change="getFile($event)" multiple="multiple">
-    <div class="to-choose" @click="toGetFile">
+    <div class="to-choose" ref="dropBox" @click="toGetFile" @drop="dropFile">
       <span>拖拽或点击上传</span>
+      <span class="note">目前只支持jpg格式的图片</span>
       <div class="choose-progress"></div>
     </div>
     <div class="chosen-files">
@@ -12,21 +13,48 @@
         <span class="size">文件大小</span>
       </div>
       <div class="file-info" v-for="item in fileList" :key="item.name">
-        <span class="file-name">{{item.name}}</span>
-        <span class="file-type">{{item.type}}</span>
-        <span class="file-size">{{parseInt(item.size/1000)}}KB</span>
+        <span class="file-name">{{ item.name }}</span>
+        <span class="file-type">{{ item.type | typeFormat }}</span>
+        <span class="file-size">{{ item.size | sizeFormat }}</span>
       </div>
-
     </div>
   </div>
 </template>
 <script>
 export default {
+  filters: {
+    typeFormat(msg){
+      console.log(msg.search('zip'));
+      if(msg.search('zip') !== -1){
+        return 'zip'
+      } else if(msg.search('jpg') !== -1 || msg.search('jpeg') !== -1){
+        return 'jpg'
+      } else {
+        return '未知'
+      }
+    },
+    sizeFormat(msg){
+      if(msg < 1000000){
+        return (msg/1000).toFixed(1) + 'KB'
+      } else if(msg > 1000000){
+        return (msg/1000000).toFixed(1) + 'MB'
+      }
+    }
+  },
   data () {
     return{
       fileList: [
       ]
     }
+  },
+  created() {
+    //下面两个是阻止浏览器默认打开拖拽进来的图片
+    document.addEventListener('drop', function (e) {
+      e.preventDefault()
+    }, false)
+    document.addEventListener('dragover', function (e) {
+      e.preventDefault()
+    }, false)
   },
   methods: {
     //用另一个点击去触发input:file按钮的点击效果
@@ -40,8 +68,14 @@ export default {
       //以后再解决上传文件重复的问题吧
 
       console.log(this.fileList);
+    },
+    dropFile(e){
+      e.preventDefault()
+      // e.stopPropagation()
+      console.log(e);
+      console.log(e.dataTransfer);
     }
-  }
+  },
 }
 </script>
 <style lang="less" scoped>
@@ -72,6 +106,16 @@ export default {
       height: 100%;
       border-radius: 30px;
       background-color: rgba(172,238,219,0.5);
+    }
+    .note{
+      width: 100%;
+      height: 30px;
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      line-height: 30px;
+      font-size: 14px;
     }
   }
   .to-choose:hover{
@@ -110,6 +154,7 @@ export default {
       width: 100%;
       transition: 0.2s;
       span{
+        height: 30px;
         float: left;
         text-align: center;
         line-height: 30px;
@@ -118,7 +163,7 @@ export default {
       .file-name{
         width: 240px;
         font-size: 14px;
-        text-align: left;
+        //text-align: left;
       }
       .file-type{
         width: 120px;
