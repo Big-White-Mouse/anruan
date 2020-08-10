@@ -29,6 +29,8 @@ export default {
         return 'zip'
       } else if(msg.search('jpg') !== -1 || msg.search('jpeg') !== -1){
         return 'jpg'
+      } else if(msg.search('png') !== -1){
+        return 'png'
       } else {
         return '未知'
       }
@@ -81,7 +83,7 @@ export default {
 <style lang="less" scoped>
 .upload-box{
   width: 100%;
-  height: 100%;
+  height: 460px;
   position: relative;
   .choose{
     display: none;
@@ -163,7 +165,6 @@ export default {
       .file-name{
         width: 240px;
         font-size: 14px;
-        //text-align: left;
       }
       .file-type{
         width: 120px;

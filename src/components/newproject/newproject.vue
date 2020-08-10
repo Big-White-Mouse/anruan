@@ -13,7 +13,7 @@
       <div class="line"></div>
       <div :class="['guide', 'template', step===3 ? 'guide-active' : '']">
         <span>3</span>
-        <span class="text">选择模板</span>
+        <span class="text">基本配置</span>
       </div>
     </div>
     <div class="project-info-box">
@@ -124,7 +124,6 @@ export default {
   }
   .project-info-box{
     width: 900px;
-    height: 460px;
     background-color: transparent;
     margin: 40px 20px 0 20px;
     border-radius: 30px;

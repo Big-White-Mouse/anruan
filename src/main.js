@@ -14,6 +14,7 @@ import './plugins/element.js'
 // 配置请求根路径
 axios.defaults.baseURL = 'http://alexking.site:8080/api/'
 // axios.defaults.timeout = 3000 //超时时间
+
 // 请求拦截器添加请求头
 axios.interceptors.request.use(config => {
   if(window.sessionStorage.getItem('token')){

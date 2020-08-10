@@ -17,7 +17,7 @@ export default {
 <style lang="less" scoped>
 .info-box{
   width: 100%;
-  height: 100%;
+  height: 320px;
   padding-top: 20px;
   background-color: #D2EFFA;
   border-radius: 30px;
