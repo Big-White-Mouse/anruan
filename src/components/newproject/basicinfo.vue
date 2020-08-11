@@ -1,7 +1,17 @@
 <template>
   <div class="info-box">
-    <input type="text" placeholder="项目名称" class="info pro-name">
-    <input type="text" placeholder="项目描述" class="info pro-name">
+    <input
+      v-model="$store.state.projectInfo.name"
+      type="text"
+      placeholder="项目名称"
+      class="info pro-name"
+    >
+    <input
+      v-model="$store.state.projectInfo.info"
+      type="text"
+      placeholder="项目描述"
+      class="info pro-name"
+    >
   </div>
 </template>
 

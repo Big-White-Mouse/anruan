@@ -8,7 +8,7 @@ import './assets/css/global.css'
 import './assets/font/iconfont.css'
 // 导入axios
 import axios from 'axios'
-
+//导入element ui
 import './plugins/element.js'
 
 // 配置请求根路径
@@ -31,5 +31,6 @@ new Vue({
   el: '#app',
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
+
 })

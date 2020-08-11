@@ -2,64 +2,129 @@
   <div class="module-box">
     <span class="title-box">选择标签</span>
     <div class="main-box">
-      <div class="tab-box">
-        <el-tag
-          v-for="tag in dynamicTags"
-          :key="tag"
-          closable
-          :disable-transitions="false"
-          @close="handleClose(tag)"
-          class="tag"
-        >
-          {{tag}}
-        </el-tag>
-        <el-input
-          v-if="inputVisible"
-          v-model="inputValue"
-          ref="saveTagInput"
-          class="input-new-tag"
-          size="small"
-          @keyup.enter.native="handleInputConfirm"
-          @blur="handleInputConfirm"
-        >
-        </el-input>
-        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
+<!--      每一个label-box包着一个标签及其属性-->
+      <div class="label-box" v-for="tag in labels" :key="tag.name">
+<!--        tab-box包着一级标签的名字-->
+        <div class="tab-box">
+          <el-tag
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag)"
+            class="tag"
+          >
+            {{ tag.name }}
+          </el-tag>
+        </div>
+<!--        attributes-box包着属性及其创建-->
+        <div class="attribute-box">
+<!--          <el-tag-->
+<!--            v-for="attr in tag.attributes"-->
+<!--            :key="attr"-->
+<!--            closable-->
+<!--            :disable-transitions="false"-->
+<!--            @close="handleAttrClose(attr.name)"-->
+<!--          >-->
+<!--            {{ attr.name }}-->
+<!--          </el-tag>-->
+<!--          <el-input-->
+<!--            v-if="tag.attrInputVisible"-->
+<!--            v-model="tag.attrInputValue"-->
+<!--            ref="saveTagInput"-->
+<!--            class="input-new-tag"-->
+<!--            size="small"-->
+<!--            @keyup.enter.native="handleInputConfirm"-->
+<!--            @blur="handleInputConfirm"-->
+<!--          >-->
+<!--          </el-input>-->
+          <el-button class="button-new-tag" size="small">+ 添加属性(之后支持)</el-button>
+        </div>
       </div>
-      <div class="attribute-box">
-
-      </div>
+      <el-input
+        v-if="mainInputVisible"
+        v-model="mainInputValue"
+        ref="mainSaveTagInput"
+        class="input-new-tag"
+        size="small"
+        @keyup.enter.native="handleInputConfirm"
+        @blur="handleInputConfirm"
+      >
+      </el-input>
+      <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  created() {
+    //转到选择标签时先从store中加载一遍labels
+    this.loadData()
+  },
   data(){
     return{
-      dynamicTags: ['标签一', '标签二', '标签三'],
-      inputVisible: false,
-      inputValue: ''
+      labels: [
+        {
+          name: '标签一',
+          attributes: [
+            {}
+          ],
+          attrInputVisible: false,
+          attrInputValue: '',
+        },
+        {
+          name: '标签二',
+          attributes:  [
+            {},
+          ],
+          attrInputVisible: false,
+          attrInputValue: '',
+        }
+      ],
+      mainInputVisible: false,
+      mainInputValue: ''
     }
   },
   methods: {
+    //删除标签
     handleClose(tag) {
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+      this.labels.splice(this.labels.indexOf(tag), 1);
+      this.$store.commit('addToStore', this.labels)
     },
 
+    //开始添加标签
     showInput() {
-      this.inputVisible = true;
+      this.mainInputVisible = true;
       this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
+        this.$refs.mainSaveTagInput.$refs.input.focus();
       });
     },
 
+    //添加标签结束
     handleInputConfirm() {
-      let inputValue = this.inputValue;
+      let inputValue = this.mainInputValue;
       if (inputValue) {
-        this.dynamicTags.push(inputValue);
+        this.labels.push(
+          {
+            name: inputValue,
+            attributes: [
+              {
+                attrInputVisible: false,
+                attrInputValue: '',
+                values: []
+              }
+            ]
+          }
+        );
       }
-      this.inputVisible = false;
-      this.inputValue = '';
+      this.mainInputVisible = false;
+      this.mainInputValue = '';
+      this.$store.commit('addToStore', this.labels)
+    },
+
+    loadData(){
+      this.labels = this.$store.state.projectInfo.labels
+      console.log(JSON.stringify(this.$store.state.projectInfo.labels));
+      console.log(JSON.stringify(this.labels));
     }
   }
 }
@@ -81,37 +146,38 @@ export default {
     min-height: 200px;
     background-color: #e5f8f4;
     border-radius: 0 12px 12px 12px;
-    .tab-box{
-      width: 200px;
-
-      //高度要改回非固定
-      //height: 200px;
-
-      .tag{
-        display: block !important;
-        border-radius: 0;
-        border: 0;
-        border-right: 1px solid #d9ecff;
-        border-bottom: 1px solid #d9ecff;
-        background-color: transparent;
+    .label-box{
+      margin: 10px 10px 0 10px;
+      border: 1px solid #318B71;
+      border-radius: 8px;
+      display: inline-block;
+      width: 880px;
+      .tab-box{
+        width: 200px;
+        .tag{
+          display: block !important;
+          border-radius: 0;
+          border: 0;
+          border-bottom: 1px solid #6fcdb2;
+          background-color: transparent;
+          color: #318B71;
+        }
       }
-      .button-new-tag{
-        background-color: transparent;
-        display: block;
-        width: 100%;
-        border: 0;
-        border-right: 1px solid #d9ecff;
-        border-bottom: 1px solid #d9ecff;
-      }
-      .input-new-tag{
-        background-color: transparent;
-        display: block;
+      .attribute-box{
+        width: 700px;
+        float: left;
+        .attribute{
+          height: 32px;
+          border-bottom: 1px solid #d9ecff;
+        }
       }
     }
-    .attribute-box{
-      width: 100%;
-      height: 100%;
-      background-color: green;
+    .button-new-tag{
+      margin: 10px;
+    }
+    .input-new-tag{
+      width: 880px;
+      margin: 10px;
     }
   }
 }
