@@ -63,22 +63,7 @@ export default {
   data(){
     return{
       labels: [
-        {
-          name: '标签一',
-          attributes: [
-            {}
-          ],
-          attrInputVisible: false,
-          attrInputValue: '',
-        },
-        {
-          name: '标签二',
-          attributes:  [
-            {},
-          ],
-          attrInputVisible: false,
-          attrInputValue: '',
-        }
+
       ],
       mainInputVisible: false,
       mainInputValue: ''
@@ -108,9 +93,11 @@ export default {
             name: inputValue,
             attributes: [
               {
-                attrInputVisible: false,
-                attrInputValue: '',
-                values: []
+                "name": '',
+                "mutable": false,
+                "input_type": '',
+                "default_value": '',
+                "values": []
               }
             ]
           }
@@ -123,8 +110,6 @@ export default {
 
     loadData(){
       this.labels = this.$store.state.projectInfo.labels
-      console.log(JSON.stringify(this.$store.state.projectInfo.labels));
-      console.log(JSON.stringify(this.labels));
     }
   }
 }
@@ -134,9 +119,12 @@ export default {
   width: 100%;
   .title-box{
     display: block;
+    box-sizing: border-box;
     height: 40px;
     width: 120px;
     border-radius: 10px 10px 0 0;
+    border: 1px solid #6fcdb2;
+    border-bottom: 0;
     background-color: #e5f8f4;
     text-align: center;
     line-height: 40px;
@@ -146,6 +134,7 @@ export default {
     min-height: 200px;
     background-color: #e5f8f4;
     border-radius: 0 12px 12px 12px;
+    border: 1px solid #6fcdb2;
     .label-box{
       margin: 10px 10px 0 10px;
       border: 1px solid #318B71;

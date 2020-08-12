@@ -3,7 +3,7 @@
     <input type="file" ref="getfile" class="choose" @change="getFile($event)" multiple="multiple">
     <div class="to-choose" ref="dropBox" @click="toGetFile" @drop="dropFile">
       <span>拖拽或点击上传</span>
-      <span class="note">目前只支持jpg格式的图片</span>
+      <span class="note">目前仅支持图片</span>
       <div class="choose-progress"></div>
     </div>
     <div class="chosen-files">
@@ -23,8 +23,8 @@
 <script>
 export default {
   filters: {
+    //判断文件类型
     typeFormat(msg){
-      console.log(msg.search('zip'));
       if(msg.search('zip') !== -1){
         return 'zip'
       } else if(msg.search('jpg') !== -1 || msg.search('jpeg') !== -1){
@@ -57,6 +57,7 @@ export default {
     document.addEventListener('dragover', function (e) {
       e.preventDefault()
     }, false)
+    this.getFileData()
   },
   methods: {
     //用另一个点击去触发input:file按钮的点击效果
@@ -70,12 +71,21 @@ export default {
       //以后再解决上传文件重复的问题吧
 
       console.log(this.fileList);
+
+      this.$store.commit('saveFileList', this.fileList)
     },
     dropFile(e){
       e.preventDefault()
-      // e.stopPropagation()
-      console.log(e);
-      console.log(e.dataTransfer);
+
+      let files = [];
+      [].forEach.call(e.dataTransfer.files, function(file) {
+        files.push(file);
+      },false);
+      this.fileList.push(...files)
+      this.$store.commit('saveFileList', this.fileList)
+    },
+    getFileData(){
+      this.fileList = this.$store.state.allFileList
     }
   },
 }

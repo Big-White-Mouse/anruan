@@ -1,7 +1,7 @@
 <template>
   <div class="item" @mouseenter="showStart" @mouseleave="hideStart">
     <span class="pro-name">{{ proInfo.name }}</span>
-    <span class="pro-info">{{ proinfo }}</span>
+    <span class="pro-info">{{ proInfo.describe }}</span>
     <div class="done">
       <span class="remain">剩余待标记: {{ remain }}</span>
       <span class="ratio">任务完成度: {{ ratio }}</span>
@@ -31,8 +31,6 @@ export default {
   data() {
     return{
       projectId: '1',
-      proname: '项目名',
-      proinfo: '项目简介',
       remain: '15',
       ratio: '50%'
     }

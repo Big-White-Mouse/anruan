@@ -43,6 +43,12 @@
       >
         <span>{{ text }}</span>
       </div>
+      <div
+        ref="progress"
+        class="btn upload-progress"
+      >
+      <span>{{ progressText }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -60,7 +66,8 @@ export default {
   data(){
     return{
       step: 1,
-      text: '创建新项目'
+      text: '创建新项目',
+      progressText: '开始创建'
     }
   },
   methods: {
@@ -75,7 +82,34 @@ export default {
       }
     },
     submit(){
-      console.log('submit!');
+      //从vuex中获取要新建的项目数据
+      let proData = this.$store.state.projectInfo
+      //判断项目基本信息是否填写
+      if(proData.name !== '' && proData.describe !== '') {
+        console.log('ok');
+        this.$http.post('v1/tasks', proData).then(e => {
+          console.log(e.data);
+          //成功后将vuex中的数据删除
+          this.$store.commit('cleanStore')
+          //开始上传数据集
+          this.uploadData(e.data.url)
+          //展示上传数据集的进度
+          this.showProgress();
+        })
+      } else {
+        this.step = 1
+        //提示填写数据
+      }
+    },
+    showProgress(){
+      this.$refs.progress.style.width = "900px"
+    },
+    uploadData(url){
+      let data = new FormData()
+      data.append('list', this.$store.state.allFileList)
+      this.$http.post(url + '/data', data).then(e=>{
+        console.log(e);
+      })
     }
   }
 }
@@ -142,6 +176,11 @@ export default {
       line-height: 50px;
       color: #ffffff;
       font-size: 18px;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .btn:hover{
+      background-color: #318B71;
     }
     .back{
       width: 120px;
@@ -154,6 +193,15 @@ export default {
     .submit{
       width: 150px;
       right: 0;
+    }
+    .upload-progress{
+      left: 0;
+      width: 0;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+    .upload-progress:hover{
+      background-color: #7EC492;
     }
   }
 }

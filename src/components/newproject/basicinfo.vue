@@ -7,7 +7,7 @@
       class="info pro-name"
     >
     <input
-      v-model="$store.state.projectInfo.info"
+      v-model="$store.state.projectInfo.describe"
       type="text"
       placeholder="项目描述"
       class="info pro-name"
@@ -32,6 +32,7 @@ export default {
   background-color: #D2EFFA;
   border-radius: 30px;
   box-sizing: border-box;
+  border: 1px solid #6fcdb2;
 
   .info{
     background-color: transparent;
