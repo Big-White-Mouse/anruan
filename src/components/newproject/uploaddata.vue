@@ -12,10 +12,13 @@
         <span class="type">文件类型</span>
         <span class="size">文件大小</span>
       </div>
-      <div class="file-info" v-for="item in fileList" :key="item.name">
+      <div class="file-info" v-for="(item, index) in fileList" :key="item.name">
         <span class="file-name">{{ item.name }}</span>
         <span class="file-type">{{ item.type | typeFormat }}</span>
         <span class="file-size">{{ item.size | sizeFormat }}</span>
+        <div class="delete" @click="deleteData(index)">
+          <i class="el-icon-delete"></i>
+        </div>
       </div>
     </div>
   </div>
@@ -35,6 +38,7 @@ export default {
         return '未知'
       }
     },
+    //判断文件大小
     sizeFormat(msg){
       if(msg < 1000000){
         return (msg/1000).toFixed(1) + 'KB'
@@ -57,6 +61,7 @@ export default {
     document.addEventListener('dragover', function (e) {
       e.preventDefault()
     }, false)
+    //每次转到这个页面都从store中加载一次数据
     this.getFileData()
   },
   methods: {
@@ -70,10 +75,9 @@ export default {
 
       //以后再解决上传文件重复的问题吧
 
-      console.log(this.fileList);
-
       this.$store.commit('saveFileList', this.fileList)
     },
+    //拖拽上传
     dropFile(e){
       e.preventDefault()
 
@@ -84,8 +88,14 @@ export default {
       this.fileList.push(...files)
       this.$store.commit('saveFileList', this.fileList)
     },
+    //获取store中的文件列表数据
     getFileData(){
       this.fileList = this.$store.state.allFileList
+    },
+    //删除文件列表中的数据
+    deleteData:function(index){
+      this.$delete(this.fileList, index)
+      this.$store.commit('saveFileList', this.fileList)
     }
   },
 }
@@ -137,11 +147,12 @@ export default {
     position: absolute;
     border: 2px solid #aceedb;
     background-color: #ecf5f3;
-    border-radius: 30px;
+    box-sizing: border-box;
+    border-radius: 20px;
     height: 100%;
     width: 480px;
     right: 0;
-    overflow: hidden;
+    overflow: auto;
     .header{
       width: 100%;
       height: 30px;
@@ -152,13 +163,13 @@ export default {
         line-height: 30px;
       }
       .name{
-        width: 240px;
+        width: 216px;
       }
       .type{
-        width: 120px;
+        width: 105px;
       }
       .size{
-        width: 120px;
+        width: 105px;
       }
     }
     .file-info{
@@ -173,14 +184,26 @@ export default {
         overflow: hidden;
       }
       .file-name{
-        width: 240px;
+        width: 216px;
         font-size: 14px;
       }
       .file-type{
-        width: 120px;
+        width: 105px;
       }
       .file-size{
-        width: 120px;
+        width: 105px;
+      }
+      .delete{
+        float: left;
+        height: 30px;
+        width: 30px;
+        color: rgba(0,0,0,0.3);
+        transition: color 0.2s;
+        text-align: center;
+        line-height: 30px;
+      }
+      .delete:hover{
+        color: rgba(0,0,0,0.9);
       }
     }
     .file-info:hover{

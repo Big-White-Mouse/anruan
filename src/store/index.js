@@ -28,6 +28,8 @@ export default new Vuex.Store({
         ],
         "z_order": false,
       }
+    },
+    cleanFileList(){
       this.state.allFileList = []
     },
     saveFileList(state, listData){

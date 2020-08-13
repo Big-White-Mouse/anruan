@@ -47,7 +47,8 @@
         ref="progress"
         class="btn upload-progress"
       >
-      <span>{{ progressText }}</span>
+        <div class="upload-progress-line" ref="progressLine"></div>
+        <span>{{ progressText }}</span>
       </div>
     </div>
   </div>
@@ -67,10 +68,11 @@ export default {
     return{
       step: 1,
       text: '创建新项目',
-      progressText: '开始创建'
+      progressText: '开始创建',
     }
   },
   methods: {
+    //控制步骤
     back(){
       if(this.step > 1){
         this.step --
@@ -81,36 +83,79 @@ export default {
         this.step ++
       }
     },
+
+    //开始提交新建项目请求
     submit(){
       //从vuex中获取要新建的项目数据
       let proData = this.$store.state.projectInfo
       //判断项目基本信息是否填写
       if(proData.name !== '' && proData.describe !== '') {
-        console.log('ok');
         this.$http.post('v1/tasks', proData).then(e => {
           console.log(e.data);
+          this.progressText = '正在创建'
+          this.$refs.progressLine.style.width = "100px"
           //成功后将vuex中的数据删除
           this.$store.commit('cleanStore')
           //开始上传数据集
           this.uploadData(e.data.url)
           //展示上传数据集的进度
-          this.showProgress();
+          this.showProgress(e.data.url)
         })
       } else {
+        //转到第一步
         this.step = 1
         //提示填写数据
+        this.open()
       }
     },
-    showProgress(){
-      this.$refs.progress.style.width = "900px"
-    },
+    //上传数据集
     uploadData(url){
+      //组织数据
       let data = new FormData()
-      data.append('list', this.$store.state.allFileList)
+      data.append("image_quality", 70)
+      this.$store.state.allFileList.forEach((item, index) => {
+        data.append("client_files["+ index +"]", item)
+      })
+      data.append("use_zip_chunks", false)
+
+      //展示进度条
+      this.$refs.progress.style.width = "900px"
+      //发送请求
       this.$http.post(url + '/data', data).then(e=>{
         console.log(e);
+        if(e.status === 202){
+          this.progressText = '上传成功'
+          this.$refs.progressLine.style.transition = "width 0.5s ease"
+          this.$refs.progressLine.style.width = "900px"
+          //跳转
+          this.$router.push({path:'/home'})
+          //清除文件列表
+          this.$store.commit('cleanFileList')
+        }
       })
-    }
+    },
+    //上传进度展示
+    async showProgress(url){
+
+
+      let state = await this.getStatus(url)
+      console.log(state);
+      if(state === "Finished"){
+        this.progressText = '创建完成，正在上传数据'
+        this.$refs.progressLine.style.width = "850px"
+
+      }
+    },
+    //获取上传进度
+    getStatus(url){
+      return this.$http.get(url + '/status').then(e => {
+        return e.data.state
+      })
+    },
+    //未填写消息
+    open() {
+      this.$message.error('请填写必要的信息');
+    },
   }
 }
 </script>
@@ -197,8 +242,28 @@ export default {
     .upload-progress{
       left: 0;
       width: 0;
+      height: 50px;
       transition: width 0.3s ease;
       overflow: hidden;
+      .upload-progress-line{
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 0;
+        height: 100%;
+        background-color: #318B71;
+        transition: width 10s linear;
+      }
+      span{
+        position: absolute;
+        display: block;
+        height: 50px;
+        width: 500px;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+      }
     }
     .upload-progress:hover{
       background-color: #7EC492;

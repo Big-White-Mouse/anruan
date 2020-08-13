@@ -28,4 +28,5 @@ Vue.use(MenuItemGroup)
 Vue.use(Upload)
 Vue.use(Tag)
 Vue.use(Input)
+
 Vue.prototype.$message = Message

@@ -93,10 +93,10 @@ export default {
             name: inputValue,
             attributes: [
               {
-                "name": '',
+                "name": 'select',
                 "mutable": false,
-                "input_type": '',
-                "default_value": '',
+                "input_type": 'select',
+                "default_value": 'select',
                 "values": []
               }
             ]
