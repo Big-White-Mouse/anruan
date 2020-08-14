@@ -1,12 +1,21 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import LoginPage from '../views/LoginPage.vue'
-import Home from '../views/Home.vue'
-import Workbench from '../views/workbench.vue'
-import Project from '../components/allproject/project.vue'
-import Manage from '../components/management/setting.vue'
-import Usercenter from '../components/usercenter/user.vue'
-import NewProject from '../components/newproject/newproject.vue'
+
+const LoginPage = () => import(/* webpackChunkName: "loginPage" */ '../views/LoginPage.vue')
+
+const Home = () => import(/* webpackChunkName: "home" */ '../views/Home.vue')
+const Project = () => import(/* webpackChunkName: "home" */ '../components/allproject/project.vue')
+const Manage = () => import(/* webpackChunkName: "home" */ '../components/management/setting.vue')
+const Usercenter = () => import(/* webpackChunkName: "home" */ '../components/usercenter/user.vue')
+const NewProject = () => import(/* webpackChunkName: "home" */ '../components/newproject/newproject.vue')
+// import Home from '../views/Home.vue'
+// import Project from '../components/allproject/project.vue'
+// import Manage from '../components/management/setting.vue'
+// import Usercenter from '../components/usercenter/user.vue'
+// import NewProject from '../components/newproject/newproject.vue'
+
+const WorkBench = () => import(/* webpackChunkName: "workBench" */ '../views/workbench.vue')
+// import Workbench from '../views/workbench.vue'
 
 Vue.use(VueRouter)
 
@@ -25,7 +34,7 @@ const routes = [
       { path: 'newproject', component: NewProject }
     ]
   },
-  { path: '/workbench', component: Workbench }
+  { path: '/workbench', component: WorkBench }
 ]
 
 //路由对象
