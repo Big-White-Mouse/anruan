@@ -15,6 +15,8 @@ const NewProject = () => import(/* webpackChunkName: "home" */ '../components/ne
 // import NewProject from '../components/newproject/newproject.vue'
 
 const WorkBench = () => import(/* webpackChunkName: "workBench" */ '../views/workbench.vue')
+const DrawPage = () => import(/* webpackChunkName: "workBench" */ '../components/workbench/drawPage.vue')
+const Setting = () => import(/* webpackChunkName: "workBench" */ '../components/workbench/setting.vue')
 // import Workbench from '../views/workbench.vue'
 
 Vue.use(VueRouter)
@@ -34,7 +36,14 @@ const routes = [
       { path: 'newproject', component: NewProject }
     ]
   },
-  { path: '/workbench', component: WorkBench }
+  {
+    path: '/workbench',
+    component: WorkBench,
+    children: [
+      { path: 'task', component: DrawPage },
+      { path: 'setting', component: Setting }
+    ]
+  }
 ]
 
 //路由对象

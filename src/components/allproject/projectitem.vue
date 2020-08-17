@@ -10,16 +10,16 @@
       <router-link
         tag="div"
         class="start"
-        :to="'/workbench/' + projectId "
+        :to="'/workbench/task'"
       >
         开始标记
       </router-link>
       <router-link
         tag="div"
         class="exam"
-        :to="'/workbench/' + projectId "
+        :to="'/workbench/setting'"
       >
-        复查
+        配置
       </router-link>
     </div>
   </div>

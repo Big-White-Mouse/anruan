@@ -3,7 +3,7 @@
     <input type="file" ref="getfile" class="choose" @change="getFile($event)" multiple="multiple">
     <div class="to-choose" ref="dropBox" @click="toGetFile" @drop="dropFile">
       <span>拖拽或点击上传</span>
-      <span class="note">目前仅支持图片</span>
+      <span class="note">支持图片或者zip压缩包</span>
       <div class="choose-progress"></div>
     </div>
     <div class="chosen-files">

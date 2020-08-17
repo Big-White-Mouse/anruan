@@ -29,10 +29,10 @@ export default {
   width: 100%;
   height: 320px;
   padding-top: 20px;
-  background-color: #D2EFFA;
+  background-color: #ecf5f3;
   border-radius: 30px;
   box-sizing: border-box;
-  border: 1px solid #6fcdb2;
+  border: 2px solid #aceedb;
 
   .info{
     background-color: transparent;

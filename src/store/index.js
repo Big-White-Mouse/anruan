@@ -8,6 +8,7 @@ export default new Vuex.Store({
     projectInfo: {
       "name": "",
       "describe": '',
+      "image_quality": 70,
       "labels": [
 
       ],
@@ -19,10 +20,14 @@ export default new Vuex.Store({
     addToStore(state, labData){
       state.projectInfo.labels = labData
     },
+    addImageQuality(state, image_quality){
+      state.projectInfo.image_quality = image_quality
+    },
     cleanStore(){
       this.state.projectInfo = {
         "name": "",
         "describe": '',
+        "image_quality": '',
         "labels": [
 
         ],

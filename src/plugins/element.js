@@ -5,7 +5,7 @@ import {
     Breadcrumb, BreadcrumbItem,
     Tabs, TabPane,
     Menu, Submenu, MenuItem, MenuItemGroup,
-    Upload, Tag, Input,
+    Upload, Tag, Input, Slider,
     Message,
 } from 'element-ui'
 
@@ -28,5 +28,6 @@ Vue.use(MenuItemGroup)
 Vue.use(Upload)
 Vue.use(Tag)
 Vue.use(Input)
+Vue.use(Slider)
 
 Vue.prototype.$message = Message
