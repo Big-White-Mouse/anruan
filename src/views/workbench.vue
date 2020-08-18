@@ -62,13 +62,16 @@ export default {
 <style lang="less" scoped>
 .workbench{
   padding-top: 35px;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
   .header{
     position: absolute;
     top: 0;
     width: 100%;
     height: 35px;
     background-color: #bbe6d6;
-    box-shadow: 0 0 2px 1px #a3c4b7;
+    box-shadow: 0 0 4px 1px #a3c4b7;
     z-index: 1;
     .icon{
       height: 100%;

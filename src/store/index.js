@@ -8,31 +8,31 @@ export default new Vuex.Store({
     projectInfo: {
       "name": "",
       "describe": '',
-      "image_quality": 70,
       "labels": [
 
       ],
       "z_order": false,
     },
-    allFileList: []
+    allFileList: [],
+    image_quality: 70
   },
   mutations: {
     addToStore(state, labData){
       state.projectInfo.labels = labData
     },
     addImageQuality(state, image_quality){
-      state.projectInfo.image_quality = image_quality
+      state.image_quality = image_quality
     },
     cleanStore(){
       this.state.projectInfo = {
         "name": "",
         "describe": '',
-        "image_quality": '',
         "labels": [
 
         ],
         "z_order": false,
       }
+      this.state.image_quality = 70
     },
     cleanFileList(){
       this.state.allFileList = []

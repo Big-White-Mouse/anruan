@@ -112,7 +112,7 @@ export default {
     uploadData(url){
       //组织数据
       let data = new FormData()
-      data.append("image_quality", 70)
+      data.append("image_quality", this.$store.state.image_quality)
       this.$store.state.allFileList.forEach((item, index) => {
         data.append("client_files["+ index +"]", item)
       })

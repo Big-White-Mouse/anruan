@@ -52,7 +52,7 @@
         <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
       </el-tab-pane>
       <el-tab-pane label="图像质量">
-        <span class="image-quality-text">图片压缩质量(%)</span>
+        <span class="image-quality-text">图片压缩质量({{image_quality}}%)</span>
         <el-slider
           v-model="image_quality"
           :step="5"
@@ -127,7 +127,7 @@ export default {
     //从仓库加载数据
     loadData(){
       this.labels = this.$store.state.projectInfo.labels
-      this.image_quality = this.$store.state.projectInfo.image_quality
+      this.image_quality = this.$store.state.image_quality
     },
     //提交imagequality
     pushImageQuality(){

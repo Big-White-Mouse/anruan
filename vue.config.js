@@ -3,5 +3,6 @@ module.exports = {
         open: true,
         port: 8888
     },
-    lintOnSave: false
+    lintOnSave: false,
+    publicPath: '/'
 }
