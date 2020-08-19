@@ -55,6 +55,20 @@
       "unicode_decimal": 59142
     },
     {
+      "icon_id": "11474313",
+      "name": "Not visible",
+      "font_class": "Notvisible",
+      "unicode": "e6fe",
+      "unicode_decimal": 59134
+    },
+    {
+      "icon_id": "11982247",
+      "name": "visible_outlined",
+      "font_class": "visible_outlined",
+      "unicode": "e9c1",
+      "unicode_decimal": 59841
+    },
+    {
       "icon_id": "12310332",
       "name": "rectangle",
       "font_class": "rectangle",
