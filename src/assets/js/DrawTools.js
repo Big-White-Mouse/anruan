@@ -167,27 +167,37 @@ var DrawTools =(function(){
         }
         var img = new Image();
 
-        img.crossOrigin = 'anonymous';//元素的跨域请求，不需要凭证
+        //img.crossOrigin = 'anonymous';//元素的跨域请求，不需要凭证
         /**java服务端 ，记得同时也要添加请求头,解决跨域访问问题,controller.getResponse().addHeader("Access-Control-Allow-Origin", "*");**/
-        img.setAttribute('crossOrigin', 'anonymous');
+        //img.setAttribute('crossOrigin', 'anonymous');
 
         img.src =src;
 
 
         //画背景图
         function drawImage(){
-            if(selectRectTemp==null){//如果放大功能没启用
+            // if(selectRectTemp==null){//如果放大功能没启用
+            //
+            //     context.drawImage(img,0,0,canvasObj.width,canvasObj.height);
+            //     saveDrawingData();
+            // }else{//放大功能开启后会执行如下
+            //
+            //
+            //     // 记录被放大的参数方便还原
+            //     context.drawImage(img,0,0,canvasObj.width,canvasObj.height);//加入这行防止下面放大时，出现canvasObj放大出现偏移量
+            //     context.drawImage(canvasObj,selectRectTemp.left-_boxTemp.left,selectRectTemp.top-_boxTemp.top,selectRectTemp.width,selectRectTemp.height,0,0,canvasObj.width,canvasObj.height);
+            //
+            // }
 
-                context.drawImage(img,0,0,canvasObj.width,canvasObj.height);
-                saveDrawingData();
-            }else{//放大功能开启后会执行如下
-
-
-                // 记录被放大的参数方便还原
-                context.drawImage(img,0,0,canvasObj.width,canvasObj.height);//加入这行防止下面放大时，出现canvasObj放大出现偏移量
-                context.drawImage(canvasObj,selectRectTemp.left-_boxTemp.left,selectRectTemp.top-_boxTemp.top,selectRectTemp.width,selectRectTemp.height,0,0,canvasObj.width,canvasObj.height);
-
+            // console.log(canvasObj.width, canvasObj.height)
+            // console.log(img.width, img.height);
+            if(img.width/img.height < canvasObj.width/canvasObj.height){
+                context.drawImage(img,(canvasObj.width-300-canvasObj.height*img.width/img.height)/2 + 5,5,canvasObj.height*img.width/img.height - 10,canvasObj.height - 10)
+            } else {
+                context.drawImage(img,5,(canvasObj.height - (canvasObj.width-300)*img.height/img.width)/2 + 5,canvasObj.width-310,(canvasObj.width-300)*img.height/img.width - 10)
             }
+
+
             //如果网格线打开，则加载网格功能
             if(isOpenDrawGrid){
                 setTimeout(function(){
@@ -213,7 +223,7 @@ var DrawTools =(function(){
             // debugger
             //给全局参数进行记录
             imageRealSize = natureSize;
-
+            console.log(imageRealSize);
         }
 
         // img.onerror=function () {
@@ -1548,6 +1558,11 @@ var DrawTools =(function(){
 
     }
 
+    var resizeCanvas = function(){
+        canvasObj.width = document.body.clientWidth - 46
+        canvasObj.height = document.body.clientHeight - 35
+    }
+
 
     return{
         // isNull:isNull,
@@ -1712,9 +1727,9 @@ var DrawTools =(function(){
         //关闭框选canvas放大功能
         closeEnlarge:closeEnlarge,
         //恢复原有的框选点位的事件(从放大canvas功能切换成框选图片功能时用)
-        recoverEvent:recoverEvent
-
-
+        recoverEvent:recoverEvent,
+        //重置画布
+        resizeCanvas:resizeCanvas
     }
 });
 

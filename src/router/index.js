@@ -40,7 +40,7 @@ const routes = [
     path: '/workbench',
     component: WorkBench,
     children: [
-      { path: 'task', component: DrawPage },
+      { path: 'task/:index', component: DrawPage },
       { path: 'setting', component: Setting }
     ]
   }
@@ -52,12 +52,12 @@ const router = new VueRouter({
 })
 
 //挂载路由导航守卫
-// router.beforeEach((to, from, next) => {
-//   //to: 将要访问的路径， from：从哪个路径跳转来， next： 放行路径, next('url'):强制跳转
-//   if(to.path === '/login') return next()
-//   const tokenStr = window.sessionStorage.getItem('token')
-//   if(!tokenStr) return next('/login')
-//   next()
-// })
+router.beforeEach((to, from, next) => {
+  //to: 将要访问的路径， from：从哪个路径跳转来， next： 放行路径, next('url'):强制跳转
+  if(to.path === '/login') return next()
+  const tokenStr = window.sessionStorage.getItem('token')
+  if(!tokenStr) return next('/login')
+  next()
+})
 
 export default router

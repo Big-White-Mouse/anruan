@@ -1,19 +1,27 @@
 <template>
   <div class="main-box">
     <div class="sidebar" >
-      <div
-        :class="['tools',{'tool-active':flag === 'mouse'}]"
-        @click="changeTools('mouse')"
+      <el-tooltip
+        :class="['item','tools',{'tool-active':flag === 'cursor'}]"
+        effect="dark"
+        content="鼠标"
+        placement="right"
       >
-        <span class="iconfont">&#xe6c7;</span>
-      </div>
+        <el-button @click="initDrawTools('cursor')">
+          <span class="iconfont">&#xe6c7;</span>
+        </el-button>
+      </el-tooltip>
       <span class="line"></span>
-      <div
-        :class="['tools',{'tool-active':flag === 'rectangle'}]"
-        @click="changeTools('rectangle')"
+      <el-tooltip
+        :class="['item','tools',{'tool-active':flag === 'rectangle'}]"
+        effect="dark"
+        content="矩形标记"
+        placement="right"
       >
-        <span class="iconfont">&#xe88e;</span>
-      </div>
+        <el-button @click="initDrawTools('rectangle')">
+          <span class="iconfont">&#xe88e;</span>
+        </el-button>
+      </el-tooltip>
     </div>
     <div class="object-bar" ref="objBar">
       <div class="drawer" ref="drawer" @click="showBar()">
@@ -52,6 +60,26 @@
           </div>
         </div>
       </div>
+      <div class="main-btn-box">
+        <div class="images">
+          <el-pagination
+            small
+            background
+            layout="prev, pager, next"
+            :total="200"
+            :pager-count="5"
+          >
+          </el-pagination>
+        </div>
+        <div class="main-func">
+          <div class="main-btn commit">
+            <span>提交</span>
+          </div>
+          <div class="main-btn skip">
+            <span>废弃</span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="paint-box">
       <canvas width="500px" height="400px" id="myCanvas"></canvas>
@@ -61,14 +89,20 @@
 
 <script>
 import { DrawTools } from '@/assets/js/DrawTools'
+import JSZip from '@/assets/js/jszip'
+import JSZipUtils from '@/assets/js/jszip-utils'
 export default {
   created() {
-    this.initDrawTools()
+    this.getImagesInfo()
+    this.getImages()
+  },
+  mounted() {
+    this.initCanvas()
   },
   data(){
     return{
       //哪一个工具
-      flag: 'mouse',
+      flag: 'cursor',
       //项目栏是否展开
       flag2: true,
       //要改到每一个元素的身上
@@ -93,18 +127,15 @@ export default {
       value: '',
 
       //画笔相关
+      drawUtil: {},
       tempStrokeStyle: 'blue',
       tempLineWidth: 1,
-      imgPath: "@/assets/image/1.png",
+      imgPath: require("../../assets/image/1.png"),
 
     }
   },
   methods: {
-    changeTools(attr){
-      this.flag = attr
-    },
     showBar(){
-      console.log(1);
       if(this.flag2){
         this.$refs.objBar.style.right = '-300px'
         this.$refs.drawer.style.left = '-35px'
@@ -115,24 +146,84 @@ export default {
         this.flag2 = true
       }
     },
-    initDrawTools(){
-      //加载画笔工具
-      let drawUtil = new DrawTools()
-      //初始化
-      drawUtil.init({
-        'canvasId': 'myCanvas',
-        "bgPic": this.imgPath,
+    getImagesInfo(){
+      this.$http.get('v1/tasks/' + this.$route.params.index + '/data/meta').then( e =>{
+        // console.log(e);
       })
-      // //赋值给全局对象？？？
-      // window.drawUtil = drawUtil
-      // //设置样式
-      // drawUtil.setStyle({
-      //   lineWidth: this.tempLineWidth,//线条宽度
-      //   strokeStyle: this.tempStrokeStyle,//画笔颜色
-      //   fillStyle: 'red',//填充色
-      //   lineJoin: 'round',//线条交脚样式
-      //   lineCap: 'round'//线条结束样式
-      // })
+    },
+    getImages(){
+      this.$http.get('v1/tasks/'+ this.$route.params.index +'/data', {
+        params: {
+          type: 'chunk',
+          number: 0,
+          quality: 'compressed'
+        }
+      }).then(e=>{
+        this.unzipImages(e.data)
+      })
+    },
+    initCanvas(){
+      //加载画笔工具
+      this.drawUtil = new DrawTools()
+      //初始化
+      this.drawUtil.init({
+        'canvasId': 'myCanvas',
+      })
+      //赋值给全局对象？？？
+      window.drawUtil = this.drawUtil
+      //设置样式
+      this.drawUtil.setStyle({
+        lineWidth: this.tempLineWidth,//线条宽度
+        strokeStyle: this.tempStrokeStyle,//画笔颜色
+        fillStyle: 'red',//填充色
+        lineJoin: 'round',//线条交脚样式
+        lineCap: 'round'//线条结束样式
+      })
+      //打印canvas大小
+      this.drawUtil.resizeCanvas()
+      //加载图片
+      this.drawUtil.setBgPic(this.imgPath)
+    },
+    initDrawTools(attr){
+      //处于相应的工具状态
+      this.flag = attr
+      //选择画笔
+      this.drawUtil.begin(attr)
+      //结束的回调函数
+      this.drawUtil.callback({
+        end:function(points,radius,realPoints){
+          //points,radius屏幕显示的坐标,圈选的半径；realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
+          //realRadiusObj图片实际半轴对象，虽然视野中画的是圈选，但是实际中可能是椭圆a,b轴(服务端实际裁剪可使用),
+          for(let i in points){
+            //points屏幕显示的坐标
+            console.log("x坐标："+points[i].getX()+" y坐标："+points[i].getY());
+            //realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
+            console.log("x坐标realPoints："+realPoints[i].getX()+" y坐标realPoints："+realPoints[i].getY());
+          }
+        }
+      })
+    },
+    unzipImages(images){
+      // 1) get a promise of the content
+      let promise = new JSZip.external.Promise(function (resolve, reject) {
+        JSZipUtils.getBinaryContent(images, function(err, data) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+
+      promise.then(JSZip.loadAsync)                     // 2) chain with the zip promise
+          .then(function(zip) {
+            return zip.file("Hello.txt").async("string"); // 3) chain with the text content promise
+          })
+          .then(function success(text) {                    // 4) display the result
+            console.log(text);
+          }, function error(e) {
+            console.log(e);
+          });
     }
   }
 }
@@ -156,8 +247,11 @@ export default {
   box-sizing: border-box;
   background-color: #bbe6d6;
   .tools{
-    height: 36px;
-    width: 36px;
+    height: 36px !important;
+    width: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background-color: #bbe6d6;
     margin: 5px;
     line-height: 36px;
     border-radius: 5px;
@@ -165,6 +259,7 @@ export default {
     text-align: center;
     span{
       font-size: 24px;
+      color: #222222 !important;
     }
   }
   .tools:hover{
@@ -215,7 +310,7 @@ export default {
     border: 2px solid #b3d9cb;
     border-radius: 12px;
     overflow: auto;
-    background-color: #eeeeee;
+    background-color: #fafbfc;
     .label-obj{
       height: 80px;
       width: 100%;
@@ -258,6 +353,34 @@ export default {
           background-color: #b9d4ca;
         }
       }
+    }
+  }
+  .images{
+    width: 290px;
+    height: 40px;
+    margin: 5px;
+  }
+  .main-func{
+    width: 290px;
+    height: 80px;
+    margin: 5px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    .main-btn{
+      width: 90px;
+      height: 40px;
+      float: left;
+      margin: 10px 20px;
+      border-radius: 10px;
+      background-color: #bbe6d6;
+      line-height: 40px;
+      text-align: center;
+      letter-spacing: 4px;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .main-btn:hover{
+      background-color: #b1eed8;
     }
   }
 }

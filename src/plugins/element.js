@@ -6,6 +6,7 @@ import {
     Tabs, TabPane,
     Menu, Submenu, MenuItem, MenuItemGroup,
     Upload, Tag, Input, Slider, Select, Option, OptionGroup,
+    Tooltip,Pagination,
     Message,
 } from 'element-ui'
 
@@ -32,5 +33,7 @@ Vue.use(Slider)
 Vue.use(Select)
 Vue.use(Option)
 Vue.use(OptionGroup)
+Vue.use(Tooltip)
+Vue.use(Pagination)
 
 Vue.prototype.$message = Message

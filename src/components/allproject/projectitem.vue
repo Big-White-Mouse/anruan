@@ -7,13 +7,12 @@
       <span class="ratio">任务完成度: {{ ratio }}</span>
     </div>
     <div class="cover" ref="cover">
-      <router-link
-        tag="div"
+      <div
         class="start"
-        :to="'/workbench/task'"
+        @click="toWorkbench(proInfo.id)"
       >
         开始标记
-      </router-link>
+      </div>
       <router-link
         tag="div"
         class="exam"
@@ -32,7 +31,18 @@ export default {
     return{
       projectId: '1',
       remain: '15',
-      ratio: '50%'
+      ratio: '50%',
+
+      //开始标注传输的日志
+      log: [{
+        "name": '',
+        "time": '',
+        "clientId": '',
+        "is_active": '',
+        "payload": {
+          "working_time": 1,
+        }
+      }]
     }
   },
   methods: {
@@ -41,6 +51,16 @@ export default {
     },
     hideStart(){
       this.$refs.cover.style.top = "300px"
+    },
+    toWorkbench(index){
+      //组织数据
+      let logs = this.log
+      console.log(logs);
+      //发送数据
+      // this.$http.post('v1/server/logs',logs).then({
+      //
+      // })
+      this.$router.push('/workbench/task/' + index)
     }
   }
 }
