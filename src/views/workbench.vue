@@ -72,7 +72,7 @@ export default {
     height: 35px;
     background-color: #bbe6d6;
     box-shadow: 0 0 4px 1px #a3c4b7;
-    z-index: 1;
+    z-index: 4;
     .icon{
       height: 100%;
       width: 120px;

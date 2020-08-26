@@ -171,7 +171,7 @@ var DrawTools =(function(){
         /**java服务端 ，记得同时也要添加请求头,解决跨域访问问题,controller.getResponse().addHeader("Access-Control-Allow-Origin", "*");**/
         //img.setAttribute('crossOrigin', 'anonymous');
 
-        img.src =src;
+        img.src = "data:image/png;base64," + src
 
 
         //画背景图
@@ -191,7 +191,10 @@ var DrawTools =(function(){
 
             // console.log(canvasObj.width, canvasObj.height)
             // console.log(img.width, img.height);
-            if(img.width/img.height < canvasObj.width/canvasObj.height){
+            //绘制图片前清空画布
+            context.clearRect(0,0, canvasObj.width, canvasObj.height)
+
+            if(img.width/img.height < (canvasObj.width-300)/canvasObj.height){
                 context.drawImage(img,(canvasObj.width-300-canvasObj.height*img.width/img.height)/2 + 5,5,canvasObj.height*img.width/img.height - 10,canvasObj.height - 10)
             } else {
                 context.drawImage(img,5,(canvasObj.height - (canvasObj.width-300)*img.height/img.width)/2 + 5,canvasObj.width-310,(canvasObj.width-300)*img.height/img.width - 10)
@@ -563,7 +566,7 @@ var DrawTools =(function(){
             }
         }
     });
-    /*线条(由两个点组成，包含方向)*/
+    /**线条(由两个点组成，包含方向)*/
     var Line=(function(p1,p2,al){
         var start=p1,end=p2,angle=al;
         var drawLine=function(){
@@ -727,7 +730,7 @@ var DrawTools =(function(){
         context.beginPath();
         context.strokeRect(x,y,width,height);//绘制矩形
     };
-    /*绘制多边形工具方法*/
+    /**绘制多边形工具方法*/
     var drawPolygon=function(points){
         if(points.length>1){//保证只有两个坐标点才是矩形
             context.beginPath();
@@ -742,7 +745,7 @@ var DrawTools =(function(){
             context.stroke();
         }
     };
-    /*绘制圆角矩形工具方法*/
+    /**绘制圆角矩形工具方法*/
     var drawRoundedRect=function(x,y,width,height,radius){
         context.beginPath();
         context.moveTo(x,y+radius);
@@ -756,7 +759,7 @@ var DrawTools =(function(){
         context.quadraticCurveTo(x,y,x,y+radius);
         context.stroke();
     };
-    /*绘制圆工具方法*/
+    /**绘制圆工具方法*/
     var drawCircle=function(c){
         var p=c.getPoint();//坐标点
         var x=p.getX();

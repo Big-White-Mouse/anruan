@@ -62,20 +62,32 @@
       </div>
       <div class="main-btn-box">
         <div class="images">
-          <el-pagination
-            small
-            background
-            layout="prev, pager, next"
-            :total="200"
-            :pager-count="5"
-          >
-          </el-pagination>
+          <div class="img-btn to-start" @click="changeImg('start')">
+            <i class="el-icon-d-arrow-left"></i>
+          </div>
+          <div class="img-btn back" @click="changeImg('back')">
+            <i class="el-icon-arrow-left"></i>
+          </div>
+          <div class="img-btn this">
+            <span>{{ imageIndex + 1 }}</span>
+          </div>
+          <div class="img-btn next" @click="changeImg('next')">
+            <i class="el-icon-arrow-right"></i>
+          </div>
+          <div class="img-btn to-end" @click="changeImg('end')">
+            <i class="el-icon-d-arrow-right"></i>
+          </div>
         </div>
         <div class="main-func">
-          <div class="main-btn commit">
-            <span>提交</span>
+          <div class="main-btn save">
+            <i class="el-icon-document-checked"></i>
+            <span>保存</span>
           </div>
-          <div class="main-btn skip">
+          <div class="main-btn commit">
+            <i class="el-icon-upload"></i>
+            <span>提交所有</span>
+          </div>
+          <div class="main-btn abandon">
             <span>废弃</span>
           </div>
         </div>
@@ -83,6 +95,16 @@
     </div>
     <div class="paint-box">
       <canvas width="500px" height="400px" id="myCanvas"></canvas>
+      <div
+        v-show="flag==='rectangle'"
+        ref="vl"
+        class="vertical-line"
+      ></div>
+      <div
+        v-show="flag==='rectangle'"
+        ref="ll"
+        class="level-line"
+      ></div>
     </div>
   </div>
 </template>
@@ -90,11 +112,11 @@
 <script>
 import { DrawTools } from '@/assets/js/DrawTools'
 import JSZip from '@/assets/js/jszip'
-import JSZipUtils from '@/assets/js/jszip-utils'
 export default {
   created() {
     this.getImagesInfo()
     this.getImages()
+    this.drawImages()
   },
   mounted() {
     this.initCanvas()
@@ -132,9 +154,14 @@ export default {
       tempLineWidth: 1,
       imgPath: require("../../assets/image/1.png"),
 
+      imagesData: [],
+      imagesSize: 0,
+      imageIndex: 0
+
     }
   },
   methods: {
+    //右侧信息栏
     showBar(){
       if(this.flag2){
         this.$refs.objBar.style.right = '-300px'
@@ -146,22 +173,42 @@ export default {
         this.flag2 = true
       }
     },
+    //获取images信息列表
     getImagesInfo(){
       this.$http.get('v1/tasks/' + this.$route.params.index + '/data/meta').then( e =>{
-        // console.log(e);
+        this.imagesSize = e.data.size
       })
     },
+    //获取图片压缩包并解压，讲base64代码保存到imagesData里
     getImages(){
+      //请求图片数据
       this.$http.get('v1/tasks/'+ this.$route.params.index +'/data', {
         params: {
           type: 'chunk',
           number: 0,
           quality: 'compressed'
-        }
+        },
+        //请求数据的格式
+        responseType:'arraybuffer',
       }).then(e=>{
-        this.unzipImages(e.data)
+        //使用JSZip解压数据
+        const zip = new JSZip()
+        if(e.data){
+          zip.loadAsync(e.data).then((imgData)=>{
+            //获取图片base64格式信息
+            for(let key in imgData.files){
+              let base = imgData.file(zip.files[key].name).async('base64')
+              base.then(res=>{
+                this.imagesData.push(res)
+              })
+            }
+          })
+        }
+      }).catch(err=>{
+        console.log(err);
       })
     },
+    //初始化画布
     initCanvas(){
       //加载画笔工具
       this.drawUtil = new DrawTools()
@@ -179,51 +226,77 @@ export default {
         lineJoin: 'round',//线条交脚样式
         lineCap: 'round'//线条结束样式
       })
-      //打印canvas大小
+      //根据屏幕设置canvas大小
       this.drawUtil.resizeCanvas()
-      //加载图片
-      this.drawUtil.setBgPic(this.imgPath)
     },
+    //绘制图片
+    drawImages(){
+      setTimeout(()=>{
+        this.drawUtil.setBgPic(this.imagesData[this.imageIndex])
+      },200)
+    },
+    //开始绘制
     initDrawTools(attr){
       //处于相应的工具状态
       this.flag = attr
+      //跟手基准线
       //选择画笔
-      this.drawUtil.begin(attr)
+      if(attr === 'rectangle'){
+        this.followMouse()
+        this.createRec()
+      } else if (attr === 'cursor'){
+        document.getElementById('myCanvas').style.cursor = 'default'
+      }
       //结束的回调函数
-      this.drawUtil.callback({
-        end:function(points,radius,realPoints){
-          //points,radius屏幕显示的坐标,圈选的半径；realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
-          //realRadiusObj图片实际半轴对象，虽然视野中画的是圈选，但是实际中可能是椭圆a,b轴(服务端实际裁剪可使用),
-          for(let i in points){
-            //points屏幕显示的坐标
-            console.log("x坐标："+points[i].getX()+" y坐标："+points[i].getY());
-            //realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
-            console.log("x坐标realPoints："+realPoints[i].getX()+" y坐标realPoints："+realPoints[i].getY());
-          }
-        }
-      })
+      // this.drawUtil.callback({
+      //   end:function(points,radius,realPoints){
+      //     //points,radius屏幕显示的坐标,圈选的半径；realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
+      //     //realRadiusObj图片实际半轴对象，虽然视野中画的是圈选，但是实际中可能是椭圆a,b轴(服务端实际裁剪可使用),
+      //     for(let i in points){
+      //       //points屏幕显示的坐标
+      //       console.log("x坐标："+points[i].getX()+" y坐标："+points[i].getY());
+      //       //realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
+      //       console.log("x坐标realPoints："+realPoints[i].getX()+" y坐标realPoints："+realPoints[i].getY());
+      //     }
+      //   }
+      // })
     },
-    unzipImages(images){
-      // 1) get a promise of the content
-      let promise = new JSZip.external.Promise(function (resolve, reject) {
-        JSZipUtils.getBinaryContent(images, function(err, data) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
-
-      promise.then(JSZip.loadAsync)                     // 2) chain with the zip promise
-          .then(function(zip) {
-            return zip.file("Hello.txt").async("string"); // 3) chain with the text content promise
-          })
-          .then(function success(text) {                    // 4) display the result
-            console.log(text);
-          }, function error(e) {
-            console.log(e);
-          });
+    //切换图片
+    changeImg(mod){
+      if(mod === 'start'){
+        this.imageIndex = 0
+      } else if(mod === 'back'){
+        if(this.imageIndex !== 0){
+          this.imageIndex -= 1
+        }
+      } else if(mod === 'next'){
+        if(this.imageIndex !== (this.imagesSize-1)){
+          this.imageIndex += 1
+        }
+      } else if(mod === 'end'){
+        this.imageIndex = this.imagesSize - 1
+      }
+      this.drawImages()
+    },
+    //跟随鼠标的基准线
+    followMouse(){
+      document.getElementById('myCanvas').style.cursor = 'none'
+      document.onmousemove = (e)=>{
+        let mPos = this.getMousePos(e)
+        this.$refs.vl.style.left = mPos.left + 'px'
+        this.$refs.ll.style.top = mPos.top + 'px'
+      }
+    },
+    //获取鼠标位置
+    getMousePos(event){
+      return {
+        top: event.clientY,
+        left: event.clientX
+      }
+    },
+    //画矩形
+    createRec(){
+      // document.getElementById('myCanvas').style.cursor = 'none'
     }
   }
 }
@@ -239,6 +312,7 @@ export default {
 }
 .sidebar{
   position: absolute;
+  z-index: 3;
   left: 0;
   top: 0;
   height: 100%;
@@ -277,6 +351,7 @@ export default {
 }
 .object-bar{
   position: absolute;
+  z-index: 3;
   top: 0;
   right: 0px;
   width: 300px;
@@ -359,6 +434,27 @@ export default {
     width: 290px;
     height: 40px;
     margin: 5px;
+    .img-btn{
+      height: 30px;
+      width: 36px;
+      background-color: #def1ea;
+      margin: 5px 11px;
+      float: left;
+      border-radius: 5px;
+      text-align: center;
+      line-height: 30px;
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    .img-btn:hover{
+      background-color: #bbe6d6;
+    }
+    .this{
+      font-size: 14px;
+    }
+    .this:hover{
+      background-color: #def1ea;
+    }
   }
   .main-func{
     width: 290px;
@@ -368,16 +464,32 @@ export default {
     box-sizing: border-box;
     .main-btn{
       width: 90px;
-      height: 40px;
+      height: 36px;
       float: left;
-      margin: 10px 20px;
-      border-radius: 10px;
+      margin: 10px 2px;
+      border-radius: 5px;
       background-color: #bbe6d6;
-      line-height: 40px;
+      line-height: 36px;
       text-align: center;
       letter-spacing: 4px;
-      font-size: 16px;
+      font-size: 14px;
       transition: all 0.2s;
+      i{
+        font-size: 18px;
+      }
+    }
+    .abandon{
+      width: 40px;
+      height: 20px;
+      font-size: 8px;
+      line-height: 20px;
+      letter-spacing: 1px;
+      margin-top: 26px;
+      border-radius: 2px;
+    }
+    .commit{
+      width: 100px;
+      letter-spacing: 2px;
     }
     .main-btn:hover{
       background-color: #b1eed8;
@@ -390,6 +502,23 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #eeeeee;
-
+  .vertical-line{
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 1px;
+    background-color: rgba(0,0,0,0.4);
+  }
+  .level-line{
+    position: absolute;
+    z-index: 2;
+    top: 50px;
+    left: 0;
+    height: 1px;
+    width: 100%;
+    background-color: rgba(0,0,0,0.4);
+  }
 }
 </style>
