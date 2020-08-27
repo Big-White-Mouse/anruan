@@ -93,15 +93,15 @@
         </div>
       </div>
     </div>
-    <div class="paint-box">
-      <canvas width="500px" height="400px" id="myCanvas"></canvas>
+    <div class="paint-box" ref="paintBox">
+      <canvas width="500px" height="400px" id="myCanvas" ref="myCanvas"></canvas>
       <div
-        v-show="flag==='rectangle'"
+        v-if="flag==='rectangle'"
         ref="vl"
         class="vertical-line"
       ></div>
       <div
-        v-show="flag==='rectangle'"
+        v-if="flag==='rectangle'"
         ref="ll"
         class="level-line"
       ></div>
@@ -110,13 +110,11 @@
 </template>
 
 <script>
-import { DrawTools } from '@/assets/js/DrawTools'
 import JSZip from '@/assets/js/jszip'
 export default {
   created() {
     this.getImagesInfo()
     this.getImages()
-    this.drawImages()
   },
   mounted() {
     this.initCanvas()
@@ -148,15 +146,17 @@ export default {
       }],
       value: '',
 
-      //画笔相关
-      drawUtil: {},
-      tempStrokeStyle: 'blue',
-      tempLineWidth: 1,
-      imgPath: require("../../assets/image/1.png"),
+      //画布对象
+      myCanvas: {},
+      //画笔对象
+      ctx: {},
+      isDrawing: false,
 
+      //图片相关
       imagesData: [],
       imagesSize: 0,
-      imageIndex: 0
+      imageIndex: 0,
+      imageInfo: {},
 
     }
   },
@@ -210,30 +210,71 @@ export default {
     },
     //初始化画布
     initCanvas(){
+      //获取元素
+      this.myCanvas = this.$refs.myCanvas
       //加载画笔工具
-      this.drawUtil = new DrawTools()
-      //初始化
-      this.drawUtil.init({
-        'canvasId': 'myCanvas',
-      })
-      //赋值给全局对象？？？
-      window.drawUtil = this.drawUtil
-      //设置样式
-      this.drawUtil.setStyle({
-        lineWidth: this.tempLineWidth,//线条宽度
-        strokeStyle: this.tempStrokeStyle,//画笔颜色
-        fillStyle: 'red',//填充色
-        lineJoin: 'round',//线条交脚样式
-        lineCap: 'round'//线条结束样式
-      })
+      this.ctx = this.myCanvas.getContext('2d')
       //根据屏幕设置canvas大小
-      this.drawUtil.resizeCanvas()
+      this.myCanvas.width = document.body.clientWidth - 46
+      this.myCanvas.height = document.body.clientHeight - 35
+      //绘制图片
+      this.drawImages()
+      //设置鼠标样式
+      document.getElementById('myCanvas').style.cursor = 'default'
     },
     //绘制图片
     drawImages(){
+      //将解压出的文件以base64格式放到图片对象中
+      let img = new Image()
+      //清除画布
+      this.ctx.clearRect(0,0, this.myCanvas.width, this.myCanvas.height)
       setTimeout(()=>{
-        this.drawUtil.setBgPic(this.imagesData[this.imageIndex])
-      },200)
+        img.src = "data:image/png;base64," + this.imagesData[this.imageIndex]
+      },100)
+      setTimeout(()=>{
+        if(img.width/img.height < (this.myCanvas.width-300)/this.myCanvas.height){
+          this.imageInfo = {
+            left: (this.myCanvas.width-300-this.myCanvas.height*img.width/img.height)/2 + 5,
+            top: 5,
+            width: this.myCanvas.height*img.width/img.height - 10,
+            height: this.myCanvas.height - 10
+          }
+        } else {
+          this.imageInfo = {
+            left: 5,
+            top: (this.myCanvas.height - (this.myCanvas.width-300)*img.height/img.width)/2 + 5,
+            width: this.myCanvas.width - 310,
+            height: (this.myCanvas.width - 300)*img.height/img.width - 10
+          }
+        }
+        //将图片绘制到canvas上
+        this.ctx.drawImage(img, this.imageInfo.left, this.imageInfo.top, this.imageInfo.width, this.imageInfo.height)
+      }, 200)
+    },
+    //切换图片
+    changeImg(mod){
+      if(mod === 'start'){
+        if(this.imageIndex !== 0){
+          this.imageIndex = 0
+          this.drawImages()
+        }
+      } else if(mod === 'back'){
+        if(this.imageIndex !== 0){
+          this.imageIndex -= 1
+          this.drawImages()
+        }
+      } else if(mod === 'next'){
+        if(this.imageIndex !== (this.imagesSize-1)){
+          this.imageIndex += 1
+          this.drawImages()
+        }
+      } else if(mod === 'end'){
+        if(this.imageIndex !== (this.imagesSize-1)){
+          this.imageIndex = this.imagesSize - 1
+          this.drawImages()
+        }
+      }
+
     },
     //开始绘制
     initDrawTools(attr){
@@ -242,50 +283,35 @@ export default {
       //跟手基准线
       //选择画笔
       if(attr === 'rectangle'){
-        this.followMouse()
+        this.setToLine()
         this.createRec()
       } else if (attr === 'cursor'){
-        document.getElementById('myCanvas').style.cursor = 'default'
+        this.setToCursor()
       }
-      //结束的回调函数
-      // this.drawUtil.callback({
-      //   end:function(points,radius,realPoints){
-      //     //points,radius屏幕显示的坐标,圈选的半径；realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
-      //     //realRadiusObj图片实际半轴对象，虽然视野中画的是圈选，但是实际中可能是椭圆a,b轴(服务端实际裁剪可使用),
-      //     for(let i in points){
-      //       //points屏幕显示的坐标
-      //       console.log("x坐标："+points[i].getX()+" y坐标："+points[i].getY());
-      //       //realPoint图片实际大小的对应坐标(服务端实际裁剪可使用)
-      //       console.log("x坐标realPoints："+realPoints[i].getX()+" y坐标realPoints："+realPoints[i].getY());
-      //     }
-      //   }
-      // })
     },
-    //切换图片
-    changeImg(mod){
-      if(mod === 'start'){
-        this.imageIndex = 0
-      } else if(mod === 'back'){
-        if(this.imageIndex !== 0){
-          this.imageIndex -= 1
-        }
-      } else if(mod === 'next'){
-        if(this.imageIndex !== (this.imagesSize-1)){
-          this.imageIndex += 1
-        }
-      } else if(mod === 'end'){
-        this.imageIndex = this.imagesSize - 1
-      }
-      this.drawImages()
+    //切换成鼠标的样式
+    setToCursor(){
+      //恢复鼠标样式
+      this.$refs.myCanvas.style.cursor = 'default'
+      //移除跟随鼠标
+      document.body.removeEventListener('mousemove', this.followMouse, false)
+      //移除click创建元素
+      document.body.removeEventListener( 'click', this.createRec, true)
+    },
+    //切换成矩形标记的样式
+    setToLine(){
+      //隐藏鼠标
+      this.$refs.myCanvas.style.cursor = 'none'
+      //跟随鼠标
+      document.body.addEventListener('mousemove', this.followMouse, false)
+      //创建矩形框
+      document.body.addEventListener('click', this.createRec, true)
     },
     //跟随鼠标的基准线
-    followMouse(){
-      document.getElementById('myCanvas').style.cursor = 'none'
-      document.onmousemove = (e)=>{
-        let mPos = this.getMousePos(e)
-        this.$refs.vl.style.left = mPos.left + 'px'
-        this.$refs.ll.style.top = mPos.top + 'px'
-      }
+    followMouse(e){
+      let mPos = this.getMousePos(e)
+      this.$refs.vl.style.left = mPos.left + 'px'
+      this.$refs.ll.style.top = mPos.top + 'px'
     },
     //获取鼠标位置
     getMousePos(event){
@@ -295,8 +321,16 @@ export default {
       }
     },
     //画矩形
-    createRec(){
-      // document.getElementById('myCanvas').style.cursor = 'none'
+    createRec(e){
+      if(e){
+        let mPos = this.getMousePos(e)
+        console.log(mPos);
+      }
+      // if(!this.isDrawing){
+      //   let rec = document.createElement('div')
+      //   rec.className += 'rec-obj'
+      //   this.$refs.paintBox.appendChild(rec)
+      // }
     }
   }
 }
@@ -502,6 +536,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #eeeeee;
+  cursor: none;
   .vertical-line{
     position: absolute;
     z-index: 2;
@@ -514,11 +549,21 @@ export default {
   .level-line{
     position: absolute;
     z-index: 2;
-    top: 50px;
+    top: 0;
     left: 0;
     height: 1px;
     width: 100%;
     background-color: rgba(0,0,0,0.4);
+  }
+  .rec-obj{
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    cursor: default;
+    border: 1px solid #333333;
   }
 }
 </style>
