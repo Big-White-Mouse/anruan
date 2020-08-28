@@ -158,6 +158,12 @@ export default {
       imageIndex: 0,
       imageInfo: {},
 
+      //矩形对象
+      rectangles: [],
+      rectangleIndex: 1,
+      recTop: 0,
+      recLeft: 0
+
     }
   },
   methods: {
@@ -230,7 +236,7 @@ export default {
       this.ctx.clearRect(0,0, this.myCanvas.width, this.myCanvas.height)
       setTimeout(()=>{
         img.src = "data:image/png;base64," + this.imagesData[this.imageIndex]
-      },100)
+      },200)
       setTimeout(()=>{
         if(img.width/img.height < (this.myCanvas.width-300)/this.myCanvas.height){
           this.imageInfo = {
@@ -249,7 +255,7 @@ export default {
         }
         //将图片绘制到canvas上
         this.ctx.drawImage(img, this.imageInfo.left, this.imageInfo.top, this.imageInfo.width, this.imageInfo.height)
-      }, 200)
+      }, 300)
     },
     //切换图片
     changeImg(mod){
@@ -276,7 +282,7 @@ export default {
       }
 
     },
-    //开始绘制
+    //切换工具
     initDrawTools(attr){
       //处于相应的工具状态
       this.flag = attr
@@ -295,8 +301,13 @@ export default {
       this.$refs.myCanvas.style.cursor = 'default'
       //移除跟随鼠标
       document.body.removeEventListener('mousemove', this.followMouse, false)
+      //如果没有完成矩形的绘制
+      if(this.isDrawing){
+        document.body.removeEventListener('mousemove', this.resizeRec, false)
+        this.isDrawing = !this.isDrawing
+      }
       //移除click创建元素
-      document.body.removeEventListener( 'click', this.createRec, true)
+      document.body.removeEventListener( 'mousedown', this.createRec, true)
     },
     //切换成矩形标记的样式
     setToLine(){
@@ -305,7 +316,7 @@ export default {
       //跟随鼠标
       document.body.addEventListener('mousemove', this.followMouse, false)
       //创建矩形框
-      document.body.addEventListener('click', this.createRec, true)
+      document.body.addEventListener('mousedown', this.createRec, true)
     },
     //跟随鼠标的基准线
     followMouse(e){
@@ -323,14 +334,62 @@ export default {
     //画矩形
     createRec(e){
       if(e){
+        //获取点击的坐标
         let mPos = this.getMousePos(e)
-        console.log(mPos);
+        //获取图片相对页面的位置
+        let leftBorder = parseInt(this.imageInfo.left) + 46
+        let topBorder = parseInt(this.imageInfo.top) + 35
+        let rightBorder = leftBorder + parseInt(this.imageInfo.width)
+        let bottomBorder = topBorder + parseInt(this.imageInfo.height)
+        //如果在图片上点击
+        if(mPos.top >= topBorder && mPos.top <= bottomBorder && mPos.left >= leftBorder && mPos.left <= rightBorder){
+          if(!this.isDrawing){
+            //转换绘制状态
+            this.isDrawing = !this.isDrawing
+            //创建元素并设置元素的左上角位置
+            let rec = document.createElement('div')
+            rec.className += 'rec-obj'
+            rec.style.top = mPos.top + 'px'
+            rec.style.left = mPos.left + 'px'
+            this.recTop = mPos.top
+            this.recLeft = mPos.left
+            //矩形框的序号
+            rec.index = this.rectangleIndex
+            this.rectangleIndex ++
+            //向矩形框数组添加对象
+            this.rectangles.push(rec)
+            //渲染到页面上
+            this.$refs.paintBox.appendChild(rec)
+            //根据鼠标位置调整矩形框的大小
+            document.body.addEventListener('mousemove', this.resizeRec, false)
+          } else {
+            this.isDrawing = !this.isDrawing
+            document.body.removeEventListener('mousemove', this.resizeRec, false)
+          }
+        }
       }
-      // if(!this.isDrawing){
-      //   let rec = document.createElement('div')
-      //   rec.className += 'rec-obj'
-      //   this.$refs.paintBox.appendChild(rec)
-      // }
+    },
+    resizeRec(e){
+      let mPos = this.getMousePos(e)
+      if(mPos.left >= this.recLeft && mPos.top >= this.recTop){
+        //鼠标在右下
+        this.drawRec( this.recTop, mPos.left+1, mPos.top+1, this.recLeft)
+      } else if (mPos.left >= this.recLeft && mPos.top <= this.recTop){
+        //右上
+        this.drawRec(mPos.top, mPos.left+1, this.recTop, this.recLeft)
+      } else if (mPos.left <= this.recLeft && mPos.top <= this.recTop){
+        //左上
+        this.drawRec(mPos.top, this.recLeft, this.recTop, mPos.left)
+      } else if (mPos.left <= this.recLeft && mPos.top >= this.recTop){
+        //左下
+        this.drawRec(this.recTop, this.recLeft, mPos.top+1, mPos.left)
+      }
+    },
+    drawRec(top, right, bottom, left){
+      this.rectangles[this.rectangles.length - 1].style.left = left + 'px'
+      this.rectangles[this.rectangles.length - 1].style.top = top + 'px'
+      this.rectangles[this.rectangles.length - 1].style.width = right - left + 'px'
+      this.rectangles[this.rectangles.length - 1].style.height = bottom - top + 'px'
     }
   }
 }
@@ -544,7 +603,7 @@ export default {
     left: 0;
     height: 100%;
     width: 1px;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(255,0,0,0.4);
   }
   .level-line{
     position: absolute;
@@ -553,17 +612,16 @@ export default {
     left: 0;
     height: 1px;
     width: 100%;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(255,0,0,0.4);
   }
-  .rec-obj{
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    width: 100px;
-    height: 100px;
-    background-color: transparent;
-    cursor: default;
-    border: 1px solid #333333;
-  }
+}
+/deep/ .rec-obj{
+  position: absolute;
+  width: 0;
+  height: 0;
+  background-color: transparent;
+  cursor: none;
+  box-sizing: border-box;
+  border: 1px solid #333333;
 }
 </style>
