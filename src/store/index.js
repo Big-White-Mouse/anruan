@@ -14,7 +14,16 @@ export default new Vuex.Store({
       "z_order": false,
     },
     allFileList: [],
-    image_quality: 70
+    image_quality: 70,
+    imageTags: {
+      "shapes":[
+      ],
+      "tracks":[
+      ],
+      "tags":[
+      ],
+      "version":26
+    }
   },
   mutations: {
     addToStore(state, labData){
@@ -39,6 +48,27 @@ export default new Vuex.Store({
     },
     saveFileList(state, listData){
       state.allFileList = listData
+    },
+    saveTagsInfo(state, shapes) {
+      let item = {}
+      for(item in shapes.rectangles){
+        state.imageTags.shapes.push({
+          "type":"rectangle",
+          "occluded":false,
+          "z_order":0,
+          "points":shapes.rectangles[item].points,
+          "attributes":[
+            {
+              "spec_id":"11",
+              "value":""
+            }
+          ],
+          "frame":shapes.rectangles[item].frame,
+          "label_id":11,
+          "group":0
+        })
+      }
+      console.log(state.imageTags.shapes);
     }
   },
   actions: {

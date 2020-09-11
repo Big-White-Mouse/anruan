@@ -115,8 +115,6 @@ export default {
       flag: 1,
 
       // 是否处于注册状态
-      // isReg: 0,
-      // isForget: 0,
       whichmode: 'login',
 
       // 所填数据是否都合法
@@ -143,14 +141,14 @@ export default {
       if (this.flag) {
         // 点击登录2秒后才能再次点击
         this.flag = 0
-        var e = this // 闭包
+        let e = this // 闭包
         setTimeout(function () { e.flag = 1 }, 2000)
         this.$http.post('v1/auth/login', this.loginForm).then(e => {
           if (e.data.key) { // 登录成功(有key值)(e.data.key)
             console.log(e.data.key)
             window.sessionStorage.setItem('token', e.data.key)
             this.showSucLoginBtn()
-            var t = this
+            let t = this
             setTimeout(function () {
               t.$router.push('/home')
             }, 800)
@@ -176,11 +174,7 @@ export default {
         setTimeout(function () { e.flag = 1 }, 2000)
         this.$http.post('v1/auth/register', this.loginForm).then(e => {
           console.log(e.data)
-          console.log(e.data.status.message);
-          if(e.data.status.message === "Something bad happend."){
-            console.log('注册成功');
-            this.whichmode = 'login'
-          }
+          this.changeMod(1)
         })
       }
     },
@@ -209,6 +203,7 @@ export default {
     },
     // 转换登录注册和忘记密码状态
     changeMod (n) {
+      // 1 是点击左下的按钮
       if (n === 1) {
         if(this.whichmode === 'login' || this.whichmode === 'forget'){
           this.whichmode = 'register'
@@ -221,7 +216,7 @@ export default {
           this.text2 = '注册'
           this.text3 = '忘记密码'
         }
-      } else if (n === 2){
+      } else if (n === 2){//2 是点击右下角的按钮
         if(this.whichmode === 'login' || this.whichmode === 'register'){
           this.whichmode = 'forget'
           this.text1 = '发送邮件'
@@ -234,6 +229,7 @@ export default {
           this.text3 = '忘记密码'
         }
       }
+      this.clearErr()
     },
     //判断密码质量
     correctpasswd () {
@@ -270,6 +266,13 @@ export default {
         this.err2 = '邮箱格式错误'
         this.rightEmail = 0
       }
+    },
+    //转换模式时清除报错信息
+    clearErr(){
+      this.err1 = ''
+      this.err2 = ''
+      this.err3 = ''
+      this.err4 = ''
     }
   }
 }

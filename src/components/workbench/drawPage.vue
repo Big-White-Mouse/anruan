@@ -28,12 +28,12 @@
         <i :class="[{'el-icon-right':flag2},{'el-icon-back':!flag2}]"></i>
       </div>
       <div class="label-obj-box">
-        <div class="label-obj">
+        <div v-for="item in shapes.rectangles" :key="item.index" class="label-obj">
           <div class="label-info">
-            <span>info</span>
+            <span>{{ item.index }}</span>
             <div class="change-label">
               <el-select
-                v-model="value"
+                v-model="shapes.rectangles[item.index-1].label_id"
                 placeholder="请选择"
                 size="mini"
               >
@@ -79,11 +79,11 @@
           </div>
         </div>
         <div class="main-func">
-          <div class="main-btn save">
+          <div class="main-btn save" @click="saveTagsToStore">
             <i class="el-icon-document-checked"></i>
             <span>保存</span>
           </div>
-          <div class="main-btn commit">
+          <div class="main-btn commit" @click="submitTags">
             <i class="el-icon-upload"></i>
             <span>提交所有</span>
           </div>
@@ -105,6 +105,7 @@
         ref="ll"
         class="level-line"
       ></div>
+      <div class="rec-box" ref="recBox"></div>
     </div>
   </div>
 </template>
@@ -112,38 +113,18 @@
 <script>
 import JSZip from '@/assets/js/jszip'
 export default {
-  created() {
-    this.getImagesInfo()
-    this.getImages()
-  },
-  mounted() {
-    this.initCanvas()
-  },
   data(){
     return{
       //哪一个工具
       flag: 'cursor',
       //项目栏是否展开
       flag2: true,
-      //要改到每一个元素的身上
+      //
       lock: false,
 
-      options: [{
-        value: '选项1',
-        label: '黄金糕'
-      }, {
-        value: '选项2',
-        label: '双皮奶'
-      }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
-      }],
+      options: [
+
+      ],
       value: '',
 
       //画布对象
@@ -153,18 +134,32 @@ export default {
       isDrawing: false,
 
       //图片相关
+      isGotImg: false,
       imagesData: [],
       imagesSize: 0,
       imageIndex: 0,
       imageInfo: {},
 
       //矩形对象
-      rectangles: [],
+      shapes: {
+        rectangles: [],
+      },
       rectangleIndex: 1,
       recTop: 0,
-      recLeft: 0
+      recLeft: 0,
 
+      //job信息
+      jobId: 0,
     }
+  },
+  created() {
+    //获取图片信息
+    this.getImagesInfo()
+    //获取job信息
+    this.getJobInfo()
+  },
+  mounted() {
+    this.getImages()
   },
   methods: {
     //右侧信息栏
@@ -188,6 +183,7 @@ export default {
     //获取图片压缩包并解压，讲base64代码保存到imagesData里
     getImages(){
       //请求图片数据
+      console.log("0.开始请求数据");
       this.$http.get('v1/tasks/'+ this.$route.params.index +'/data', {
         params: {
           type: 'chunk',
@@ -197,6 +193,7 @@ export default {
         //请求数据的格式
         responseType:'arraybuffer',
       }).then(e=>{
+        console.log("1.图片获取完成")
         //使用JSZip解压数据
         const zip = new JSZip()
         if(e.data){
@@ -208,9 +205,14 @@ export default {
                 this.imagesData.push(res)
               })
             }
+            console.log("2.图片解压完成")
+            this.isGotImg = true
           })
         }
-      }).catch(err=>{
+      }).then(() => {
+          this.initCanvas()
+        }
+      ).catch(err=>{
         console.log(err);
       })
     },
@@ -223,6 +225,8 @@ export default {
       //根据屏幕设置canvas大小
       this.myCanvas.width = document.body.clientWidth - 46
       this.myCanvas.height = document.body.clientHeight - 35
+
+      console.log("3.画布初始化完成")
       //绘制图片
       this.drawImages()
       //设置鼠标样式
@@ -232,11 +236,14 @@ export default {
     drawImages(){
       //将解压出的文件以base64格式放到图片对象中
       let img = new Image()
+
+      console.log("4.图片对象初始化完成");
       //清除画布
       this.ctx.clearRect(0,0, this.myCanvas.width, this.myCanvas.height)
       setTimeout(()=>{
         img.src = "data:image/png;base64," + this.imagesData[this.imageIndex]
-      },200)
+        console.log("5.base64数据嵌入完成");
+      },100)
       setTimeout(()=>{
         if(img.width/img.height < (this.myCanvas.width-300)/this.myCanvas.height){
           this.imageInfo = {
@@ -253,9 +260,11 @@ export default {
             height: (this.myCanvas.width - 300)*img.height/img.width - 10
           }
         }
+        console.log("6.图片尺寸数据处理完成");
         //将图片绘制到canvas上
         this.ctx.drawImage(img, this.imageInfo.left, this.imageInfo.top, this.imageInfo.width, this.imageInfo.height)
-      }, 300)
+        console.log("7.图片绘制完成");
+      }, 200)
     },
     //切换图片
     changeImg(mod){
@@ -263,21 +272,29 @@ export default {
         if(this.imageIndex !== 0){
           this.imageIndex = 0
           this.drawImages()
+          this.removeRec('all')
+          this.reDrawTags(this.imageIndex)
         }
       } else if(mod === 'back'){
         if(this.imageIndex !== 0){
           this.imageIndex -= 1
           this.drawImages()
+          this.removeRec('all')
+          this.reDrawTags(this.imageIndex)
         }
       } else if(mod === 'next'){
         if(this.imageIndex !== (this.imagesSize-1)){
           this.imageIndex += 1
           this.drawImages()
+          this.removeRec('all')
+          this.reDrawTags(this.imageIndex)
         }
       } else if(mod === 'end'){
         if(this.imageIndex !== (this.imagesSize-1)){
           this.imageIndex = this.imagesSize - 1
           this.drawImages()
+          this.removeRec('all')
+          this.reDrawTags(this.imageIndex)
         }
       }
 
@@ -299,6 +316,9 @@ export default {
     setToCursor(){
       //恢复鼠标样式
       this.$refs.myCanvas.style.cursor = 'default'
+      document.getElementsByClassName('rec-obj').forEach((item)=>{
+        item.style.cursor = 'default'
+      })
       //移除跟随鼠标
       document.body.removeEventListener('mousemove', this.followMouse, false)
       //如果没有完成矩形的绘制
@@ -313,6 +333,9 @@ export default {
     setToLine(){
       //隐藏鼠标
       this.$refs.myCanvas.style.cursor = 'none'
+      document.getElementsByClassName('rec-obj').forEach((item)=>{
+        item.style.cursor = 'none'
+      })
       //跟随鼠标
       document.body.addEventListener('mousemove', this.followMouse, false)
       //创建矩形框
@@ -353,22 +376,48 @@ export default {
             rec.style.left = mPos.left + 'px'
             this.recTop = mPos.top
             this.recLeft = mPos.left
-            //矩形框的序号
-            rec.index = this.rectangleIndex
-            this.rectangleIndex ++
             //向矩形框数组添加对象
-            this.rectangles.push(rec)
+            let r = {
+              //矩形框的序号
+              type: "rectangle",
+              occluded:false,
+              z_order:0,
+              index: this.rectangleIndex,
+              el: rec,
+              id:5,
+              frame: this.imageIndex + 1,
+              label_id: '请选择',
+              group:0,
+              attributes:[
+                {
+                  "spec_id":11,
+                  "value":"BMW"
+                }
+              ],
+              points:[
+              ],
+            }
+            this.rectangleIndex ++
+            this.shapes.rectangles.push(r)
             //渲染到页面上
-            this.$refs.paintBox.appendChild(rec)
+            this.$refs.recBox.appendChild(rec)
             //根据鼠标位置调整矩形框的大小
             document.body.addEventListener('mousemove', this.resizeRec, false)
           } else {
             this.isDrawing = !this.isDrawing
             document.body.removeEventListener('mousemove', this.resizeRec, false)
+            this.shapes.rectangles[this.shapes.rectangles.length - 1].points = [
+              parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.left.replace('px','')) - (parseInt(this.imageInfo.left) + 46),
+              parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.top.replace('px','')) - (parseInt(this.imageInfo.top) + 35),
+              parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.width.replace('px',''))+(parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.left.replace('px','')) - (parseInt(this.imageInfo.left) + 46)),
+              parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.height.replace('px',''))+(parseInt(this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.top.replace('px','')) - (parseInt(this.imageInfo.top) + 35)),
+            ]
+            this.initDrawTools('cursor')
           }
         }
       }
     },
+    //鼠标移动控制矩形框大小
     resizeRec(e){
       let mPos = this.getMousePos(e)
       if(mPos.left >= this.recLeft && mPos.top >= this.recTop){
@@ -385,12 +434,64 @@ export default {
         this.drawRec(this.recTop, this.recLeft, mPos.top+1, mPos.left)
       }
     },
+    //绘制矩形框
     drawRec(top, right, bottom, left){
-      this.rectangles[this.rectangles.length - 1].style.left = left + 'px'
-      this.rectangles[this.rectangles.length - 1].style.top = top + 'px'
-      this.rectangles[this.rectangles.length - 1].style.width = right - left + 'px'
-      this.rectangles[this.rectangles.length - 1].style.height = bottom - top + 'px'
-    }
+      this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.left = left + 'px'
+      this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.top = top + 'px'
+      this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.width = right - left + 'px'
+      this.shapes.rectangles[this.shapes.rectangles.length - 1].el.style.height = bottom - top + 'px'
+    },
+    //删除元素
+    removeRec(node){
+      if(node === 'all'){
+        this.$refs.recBox.innerHTML = ''
+        this.shapes.rectangles = []
+        this.rectangleIndex = 1
+      }
+    },
+    //获取job信息
+    getJobInfo(){
+      this.$http.get('v1/tasks?',{
+        params: {
+          id: this.$route.params.index,
+          page: 1,
+          page_size: 10
+        }
+      }).then((e)=>{
+        this.jobId = e.data.results[0].segments[0].jobs[0].id
+        console.log(e)
+        for(let item in e.data.results[0].labels){
+          let label = {
+            value: e.data.results[0].labels[item].id,
+            label: e.data.results[0].labels[item].name
+          }
+          this.options.push(label)
+        }
+        console.log(this.options);
+      })
+    },
+    //将标注信息存储到store中
+    saveTagsToStore(){
+      this.$store.commit('saveTagsInfo', this.shapes)
+    },
+    //提交标注信息
+    submitTags(){
+      let TagsInfo = this.$store.state.imageTags
+      console.log(TagsInfo)
+      // this.$http.patch('v1/tasks?page_size=10&id=3&page=1', TagsInfo).then((e)=>{
+      //   console.log(e);
+      // })
+      this.$http.patch('v1/jobs/'+this.jobId+'/annotations?action=create', TagsInfo).then((e)=>{
+        console.log(e)
+      }).catch((err)=>{
+        console.log(err);
+      })
+    },
+    //切换图片接收信息重新绘制Tag
+    reDrawTags(index){
+      console.log(index);
+    },
+
   }
 }
 </script>
@@ -489,16 +590,17 @@ export default {
         span{
           display: block;
           float: left;
-          margin-left: 20px;
+          padding-left: 20px;
+          box-sizing: border-box;
           font-size: 14px;
           line-height: 30px;
-          width: 100px;
+          width: 30%;
           overflow: hidden;
         }
         .change-label{
           float: right;
           height: 100%;
-          width: 140px;
+          width: 60%;
           box-sizing: border-box;
           margin-right: 20px;
           padding: 2px;
@@ -510,7 +612,7 @@ export default {
         .func{
           width: 30px;
           height: 30px;
-          margin: 10px 30px;
+          margin: 10px 20px ;
           float: left;
           border-radius: 6px;
           transition: background-color 0.2s;
@@ -550,6 +652,8 @@ export default {
     }
   }
   .main-func{
+    position: absolute;
+    bottom: 0;
     width: 290px;
     height: 80px;
     margin: 5px;
@@ -624,4 +728,8 @@ export default {
   box-sizing: border-box;
   border: 1px solid #333333;
 }
+///deep/ .rec-obj:hover{
+//  border: 2px solid #555555;
+//  background-color: rgba(228,254,239,0.3);
+//}
 </style>
