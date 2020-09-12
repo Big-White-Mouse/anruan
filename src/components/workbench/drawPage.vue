@@ -384,15 +384,11 @@ export default {
               z_order:0,
               index: this.rectangleIndex,
               el: rec,
-              id:5,
+              // id:5,
               frame: this.imageIndex + 1,
               label_id: '请选择',
               group:0,
               attributes:[
-                {
-                  "spec_id":11,
-                  "value":"BMW"
-                }
               ],
               points:[
               ],
@@ -471,6 +467,7 @@ export default {
       })
     },
     //将标注信息存储到store中
+    /** 多次保存会保存重复信息 */
     saveTagsToStore(){
       this.$store.commit('saveTagsInfo', this.shapes)
     },
@@ -488,8 +485,48 @@ export default {
       })
     },
     //切换图片接收信息重新绘制Tag
+    /** 每个矩形框的标签没有绑定*/
     reDrawTags(index){
-      console.log(index);
+      //切换到了第几张图片
+      let imgIndex = index + 1
+      //从store获取所有的标注信息
+      let TagsInfo = this.$store.state.imageTags.shapes
+      //清洗出这张图片的标注信息
+      console.log(TagsInfo);
+      for(let item in TagsInfo){
+        if(TagsInfo[item].frame === imgIndex){
+
+          //创建矩形框
+          let rec = document.createElement('div')
+          rec.className += 'rec-obj'
+          rec.style.left = parseInt(TagsInfo[item].points[0]) + parseInt(this.imageInfo.left) + 'px'
+          rec.style.top = parseInt(TagsInfo[item].points[1]) + parseInt(this.imageInfo.top) + 'px'
+          rec.style.width = parseInt(TagsInfo[item].points[2]) - parseInt(TagsInfo[item].points[0]) + 'px'
+          rec.style.height = parseInt(TagsInfo[item].points[3]) - parseInt(TagsInfo[item].points[1]) + 'px'
+          this.$refs.recBox.appendChild(rec)
+
+          console.log(TagsInfo[item])
+          //添加数据
+          this.shapes.rectangles.push({
+            type: TagsInfo[item].type,
+            occluded: TagsInfo[item].occluded,
+            z_order: TagsInfo[item].z_order,
+            index: this.rectangleIndex,
+            el: rec,
+            // id:5,
+            frame: TagsInfo[item].frame,
+            label_id: TagsInfo[item].label_id,
+            group: TagsInfo[item].group,
+            attributes: TagsInfo[item].attributes,
+            points: TagsInfo[item].points,
+          })
+          this.rectangleIndex ++
+        }
+      }
+      //恢复鼠标样式
+      document.getElementsByClassName('rec-obj').forEach((item)=>{
+        item.style.cursor = 'default'
+      })
     },
 
   }

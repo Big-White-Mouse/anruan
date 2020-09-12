@@ -49,6 +49,7 @@ export default new Vuex.Store({
     saveFileList(state, listData){
       state.allFileList = listData
     },
+    /** spec_id需要动态绑定*/
     saveTagsInfo(state, shapes) {
       let item = {}
       for(item in shapes.rectangles){
@@ -59,12 +60,12 @@ export default new Vuex.Store({
           "points":shapes.rectangles[item].points,
           "attributes":[
             {
-              "spec_id":"11",
+              "spec_id":"17",
               "value":""
             }
           ],
           "frame":shapes.rectangles[item].frame,
-          "label_id":11,
+          "label_id":shapes.rectangles[item].label_id,
           "group":0
         })
       }
